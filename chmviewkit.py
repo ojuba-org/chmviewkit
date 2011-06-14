@@ -88,7 +88,7 @@ class WV(webkit.WebView):
     u=urlparse(uri)
     if u.scheme!='file' and u.hostname!='127.0.0.1' and u.hostname!='localhost':
       policy.ignore()
-      if view.links_prompt and not sure("open [%s] in external browser" % uri, None): return True
+      if view.links_prompt and not sure(_("open [%s] in external browser") % uri, None): return True
       run_in_bg("%s '%s'" % (broswer ,uri))
       return True
     return False
@@ -97,7 +97,7 @@ class WV(webkit.WebView):
     uri=networkRequest.get_uri()
     u=urlparse(uri)
     if u.scheme!='file' and u.hostname!='127.0.0.1' and u.hostname!='localhost':
-      if view.links_prompt and not sure("open [%s] in external browser" % uri, None): return 1
+      if view.links_prompt and not sure(_("open [%s] in external browser") % uri, None): return 1
       run_in_bg("%s '%s'" % (broswer ,uri))
       return 1
     return 0
@@ -254,7 +254,7 @@ class ContentPane (gtk.HPaned):
     def _populate_page_popup_cb(self, view, menu):
         # misc
         if self._hovered_uri:
-            open_in_new_tab = gtk.MenuItem(("Open Link in New Tab"))
+            open_in_new_tab = gtk.MenuItem(_("Open Link in New Tab"))
             open_in_new_tab.connect("activate", self._open_in_new_tab, view)
             menu.insert(open_in_new_tab, 0)
             menu.show_all()
@@ -307,7 +307,7 @@ class MainWindow(gtk.Window):
     
     gtk.window_set_default_icon_name('chmviewkit')
     gtk.Window.__init__(self)
-    self.set_title('CHM View Kit')
+    self.set_title(_('CHM View Kit'))
     self.set_default_size(600, 480)
     
     vb=gtk.VBox(False,0); self.add(vb)
@@ -315,12 +315,12 @@ class MainWindow(gtk.Window):
     tools=gtk.Toolbar()
     vb.pack_start(tools, False, False, 2)
     
-    self._content= ContentPane(None, "CHM View Kit")
+    self._content= ContentPane(None, _("CHM View Kit"))
     vb.pack_start(self._content,True, True, 2)
 
     b=gtk.ToolButton(gtk.STOCK_OPEN)
     b.connect('clicked', self._open_cb)
-    b.set_tooltip_text("Open a CHM file")
+    b.set_tooltip_text(_("Open a CHM file"))
     tools.insert(b, -1)
 
     # TODO: add navigation buttons (back, forward ..etc.) and zoom buttons
@@ -328,7 +328,7 @@ class MainWindow(gtk.Window):
 
     img=gtk.Image()
     img.set_from_stock(gtk.STOCK_ZOOM_IN, gtk.ICON_SIZE_BUTTON)
-    b=gtk.ToolButton(icon_widget=img, label="Zoom in")
+    b=gtk.ToolButton(icon_widget=img, label=_("Zoom in"))
     b.set_is_important(True)
     b.set_tooltip_text("Makes things appear bigger")
     b.connect('clicked', lambda a: self._do_in_current_view("zoom_in"))
@@ -336,14 +336,14 @@ class MainWindow(gtk.Window):
 
     img=gtk.Image()
     img.set_from_stock(gtk.STOCK_ZOOM_OUT, gtk.ICON_SIZE_BUTTON)
-    b=gtk.ToolButton(icon_widget=img, label="Zoom out")
+    b=gtk.ToolButton(icon_widget=img, label=_("Zoom out"))
     b.set_tooltip_text("Makes things appear smaller")
     b.connect('clicked', lambda a: self._do_in_current_view("zoom_out"))
     tools.insert(b, -1)
 
     img=gtk.Image()
     img.set_from_stock(gtk.STOCK_ZOOM_100, gtk.ICON_SIZE_BUTTON)
-    b=gtk.ToolButton(icon_widget=img, label="1:1 Zoom")
+    b=gtk.ToolButton(icon_widget=img, label=_("1:1 Zoom"))
     b.set_tooltip_text("restore original zoom factor")
     b.connect('clicked', lambda a: self._do_in_current_view("set_zoom_level",1.0))
     tools.insert(b, -1)
@@ -363,11 +363,11 @@ class MainWindow(gtk.Window):
       return self._open_dlg.run()
     self._open_dlg=gtk.FileChooserDialog("Select files to import", buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
     ff=gtk.FileFilter()
-    ff.set_name('CHM Files')
+    ff.set_name(_('CHM Files'))
     ff.add_mime_type('application/x-chm')
     self._open_dlg.add_filter(ff)
     ff=gtk.FileFilter()
-    ff.set_name('All files')
+    ff.set_name(_('All files'))
     ff.add_pattern('*')
     self._open_dlg.add_filter(ff)
     self._open_dlg.set_select_multiple(False)
@@ -521,6 +521,11 @@ class ChmWebApp:
 
 
 def main():
+  exedir=os.path.dirname(sys.argv[0])
+  ld=os.path.join(exedir,'..','share','locale')
+  if not os.path.isdir(ld): ld=os.path.join(exedir, 'locale')
+  gettext.install('chmviewkit', ld, unicode=0)
+
   app=ChmWebApp()
   port, server=launchServer(app)
   gobject.threads_init()

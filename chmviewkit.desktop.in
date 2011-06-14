@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+_Name=CHM View Kit
+_GenericName=CHM Viewer
+Terminal=false
+TryExec=chmviewkit
+Exec=chmviewkit
+Icon=chmviewkit
+Categories=Categories=GNOME;GTK;Application;Office;
+StartupNotify=false
+

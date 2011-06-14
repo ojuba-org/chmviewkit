@@ -1,0 +1,59 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-06-14 15:23+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../chmviewkit.desktop.in.h:1 ../chmviewkit.py:310 ../chmviewkit.py:318
+msgid "CHM View Kit"
+msgstr ""
+
+#: ../chmviewkit.desktop.in.h:2
+msgid "CHM Viewer"
+msgstr ""
+
+#: ../chmviewkit.py:91 ../chmviewkit.py:100
+#, python-format
+msgid "open [%s] in external browser"
+msgstr ""
+
+#: ../chmviewkit.py:257
+msgid "Open Link in New Tab"
+msgstr ""
+
+#: ../chmviewkit.py:323
+msgid "Open a CHM file"
+msgstr ""
+
+#: ../chmviewkit.py:331
+msgid "Zoom in"
+msgstr ""
+
+#: ../chmviewkit.py:339
+msgid "Zoom out"
+msgstr ""
+
+#: ../chmviewkit.py:346
+msgid "1:1 Zoom"
+msgstr ""
+
+#: ../chmviewkit.py:366
+msgid "CHM Files"
+msgstr ""
+
+#: ../chmviewkit.py:370
+msgid "All files"
+msgstr ""
