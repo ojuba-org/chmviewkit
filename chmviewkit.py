@@ -451,6 +451,9 @@ class ChmWebApp:
         l=path[1:].split('$', 1)
         key=l[0]
         fn=uri
+        # we can continue without redirect, but it's better to redirect so that we always have a valid referrer
+        start_response("302 moved", [('content-type', 'text/plain'), ('Location', "/"+key+"$"+fn)])
+        return ("moved",)
       else:
         # in case of no key and no valid referrer give 404
         start_response("404 Not found", [('content-type', 'text/plain')])
@@ -465,7 +468,8 @@ class ChmWebApp:
       return ('not found',)
     l,data=chmf.RetrieveObject(u)
     start_response("200 OK", [('content-type', mime)])
-    if ext=='htm': data=self._href_re.sub(r'\1'+key+'$/',data) # to test referrer fix comment this out
+    # to test referrer fix comment out next line
+    if ext=='htm': data=self._href_re.sub(r'\1'+key+'$/',data)
     return (data,)
 
   def load_chm(self, fn):
