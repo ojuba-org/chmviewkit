@@ -312,9 +312,31 @@ class ContentPane (gtk.HPaned):
 class BookSidePane(gtk.Notebook):
   def __init__(self, app, key):
     gtk.Notebook.__init__(self)
-    self.append_page(gtk.Label("TOC:"+key), gtk.Label(_('Topics Tree')))
+    self.app=app
+    self.key=key
+    self.append_page(self.build_toc_tree(), gtk.Label(_('Topics Tree')))
     self.append_page(gtk.Label("IX:"+key), gtk.Label(_('Index')))
     self.append_page(gtk.Label("Search:"+key), gtk.Label(_('Search')))
+
+  def build_toc_tree(self):
+    app,key=self.app,self.key
+    s = gtk.TreeStore(str,str) # label, url
+    self.tree=gtk.TreeView(s)
+    col=gtk.TreeViewColumn('Files', gtk.CellRendererText(), text=0)
+    col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+    col.set_resizable(True)
+    col.set_expand(True)
+    self.tree.insert_column(col, -1)
+    p=[None]
+    l=[]
+    for e in self.app.get_toc(key):
+      while(l and l[-1]>=e['level']): p.pop(); l.pop()
+      l.append(e['level'])
+      p.append(s.append(p[-1],(e['name.utf8'], e['local'])))
+    scroll=gtk.ScrolledWindow()
+    scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+    scroll.add(self.tree)
+    return scroll
 
 class MainWindow(gtk.Window):
   def __init__(self, app, port, server):
