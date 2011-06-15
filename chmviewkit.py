@@ -316,14 +316,35 @@ class BookSidePane(gtk.Notebook):
     self.app=app
     self.key=key
     self.append_page(self.build_toc_tree(), gtk.Label(_('Topics Tree')))
-    self.append_page(gtk.Label("IX:"+key), gtk.Label(_('Index')))
+    self.append_page(self.build_ix(), gtk.Label(_('Index')))
     self.append_page(gtk.Label("Search:"+key), gtk.Label(_('Search')))
+
+  def build_ix(self):
+    app,key=self.app,self.key
+    s = gtk.TreeStore(str, str, bool, float) # label, url
+    self.ix=gtk.TreeView(s)
+    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), text=0)
+    col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+    col.set_resizable(True)
+    col.set_expand(True)
+    self.ix.insert_column(col, -1)
+    p=[None]
+    l=[]
+    for e in self.app.get_ix(key):
+      while(l and l[-1]>=e['level']): p.pop(); l.pop()
+      l.append(e['level'])
+      p.append(s.append(p[-1],(e['name.utf8'], e.get('local', ''), e['is_page'], 1.0)))
+    scroll=gtk.ScrolledWindow()
+    scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+    scroll.add(self.ix)
+    self.ix.connect("cursor-changed", self._toc_cb)
+    return scroll
 
   def build_toc_tree(self):
     app,key=self.app,self.key
     s = gtk.TreeStore(str, str, bool) # label, url
     self.tree=gtk.TreeView(s)
-    col=gtk.TreeViewColumn('Files', gtk.CellRendererText(), text=0)
+    col=gtk.TreeViewColumn('Topics', gtk.CellRendererText(), text=0)
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
@@ -430,11 +451,13 @@ class MainWindow(gtk.Window):
   def _open_cb(self, *a):
     if self._show_open_dlg()!=gtk.RESPONSE_ACCEPT: return
     chmfn=self._open_dlg.get_filename()
+    fn=""
     try:
       # FIXME: have a single method for this
       key=self.app.load_chm(chmfn)
-      fn=self.app.get_toc(key)[0]['local']
+      fn=self.app.get_toc(key)[0]['local']  # FIXME: just put cursor to first is_page
     except IOError: return # FIXME: show a nice error to user
+    except KeyError: pass
     self._content.new_tab(self.gen_url(key, fn), key)
     pane=BookSidePane(self, self.app, key)
     self.app.chm[key]["pane"]=pane
@@ -486,6 +509,7 @@ class ChmWebApp:
   }
   _li_re=re.compile(r'''(</?(?:ul|li)[^>]*>)''', re.I | re.S | re.M)
   _p_re=re.compile(r'''<param([^<>]+)>''', re.I | re.S | re.M)
+  _kv_re=re.compile(r'''(\S+)\s*=\s*(["'])([^'"]*)\2''', re.I | re.S | re.M)
   _href_re=re.compile(r'''(<[^<>]+(?:href|src)=(["'])/)''', re.I | re.S | re.M)
   def __init__(self):
     self.key2file={}
@@ -545,25 +569,19 @@ class ChmWebApp:
       self.chm[key]['chmf']=chmf
     return self.chm[key]['chmf']
 
-  def get_toc(self, key):
-    chmf=self.get_chmf(key)
-    if self.chm[key].has_key('toc'): return self.chm[key]['toc']
-    t=chmf.GetTopicsTree()
+  def _parse_toc_html(self, html):
     li=self._li_re
     p=self._p_re
     level=0
     toc=[]
-    for i in li.split(t):
+    for i in li.split(html):
       e={}
-      i=i.lower()
-      if i.startswith('<ul'): level+=1
-      elif i.startswith('</ul'): level-=1
+      ul=i.lower()
+      if ul.startswith('<ul'): level+=1
+      elif ul.startswith('</ul'): level-=1
       for m in p.findall(i):
         param={}
-        for j in m.split():
-          l=j.split('=', 1)
-          if len(l)!=2: continue
-          k,v=l
+        for k,j2,v in self._kv_re.findall(m):
           param[k.lower().strip(" \t\n\r\"'")]=v.strip(" \t\n\r\"'")
         if param.has_key('name') and param.has_key('value'):
           e[param['name'].lower()]=param['value']
@@ -573,8 +591,21 @@ class ChmWebApp:
       e['level']=level
       e['is_page']=e.has_key('local')
       if e.has_key('name'): toc.append(e)
+    return toc
+
+  def get_toc(self, key):
+    chmf=self.get_chmf(key)
+    if self.chm[key].has_key('toc'): return self.chm[key]['toc']
+    toc=self._parse_toc_html(chmf.GetTopicsTree())
     self.chm[key]['toc']=toc
     return toc
+
+  def get_ix(self, key):
+    chmf=self.get_chmf(key)
+    if self.chm[key].has_key('ix'): return self.chm[key]['ix']
+    ix=self._parse_toc_html(chmf.GetIndex())
+    self.chm[key]['ix']=ix
+    return ix
 
 
 def main():
@@ -595,3 +626,4 @@ def main():
 
 if __name__ == "__main__":
   main()
+
