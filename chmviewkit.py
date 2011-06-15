@@ -204,7 +204,7 @@ class ContentPane (gtk.HPaned):
 
     def load (self, uri):
         """load the given uri in the current web view"""
-        child = self.tabs.get_nth_page(self.get_current_page())
+        child = self.tabs.get_nth_page(self.tabs.get_current_page())
         wv = child.get_child()
         wv.open(uri)
 
@@ -310,8 +310,9 @@ class ContentPane (gtk.HPaned):
         self.emit("new-window-requested", web_view)
 
 class BookSidePane(gtk.Notebook):
-  def __init__(self, app, key):
+  def __init__(self, win, app, key):
     gtk.Notebook.__init__(self)
+    self.win=win
     self.app=app
     self.key=key
     self.append_page(self.build_toc_tree(), gtk.Label(_('Topics Tree')))
@@ -336,7 +337,13 @@ class BookSidePane(gtk.Notebook):
     scroll=gtk.ScrolledWindow()
     scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
     scroll.add(self.tree)
+    self.tree.connect("cursor-changed", self._toc_cb)
     return scroll
+
+  def _toc_cb(self, tree, *a):
+    s,i=tree.get_selection().get_selected()
+    url=self.win.gen_url(self.key, s.get_value(i, 1))
+    self.win._content.load(url)
 
 class MainWindow(gtk.Window):
   def __init__(self, app, port, server):
@@ -415,6 +422,8 @@ class MainWindow(gtk.Window):
     self._open_dlg.connect('response', lambda w,*a: w.hide() or True)
     return self._open_dlg.run()
 
+  def gen_url(self, key, fn):
+    return "http://127.0.0.1:%d/%s$/%s" % (self.port, key, fn)
 
   def _open_cb(self, *a):
     if self._show_open_dlg()!=gtk.RESPONSE_ACCEPT: return
@@ -424,8 +433,8 @@ class MainWindow(gtk.Window):
       key=self.app.load_chm(chmfn)
       fn=self.app.get_toc(key)[0]['local']
     except IOError: return # FIXME: show a nice error to user
-    self._content.new_tab("http://127.0.0.1:%d/%s$/%s" % (self.port, key, fn), key)
-    pane=BookSidePane(self.app, key)
+    self._content.new_tab(self.gen_url(key, fn), key)
+    pane=BookSidePane(self, self.app, key)
     self.app.chm[key]["pane"]=pane
     n=self._content.sidepane.append_page(pane)
     self._content.sidepane.get_nth_page(n).show_all()
