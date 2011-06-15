@@ -637,6 +637,9 @@ def main():
   while(not server.running): time.sleep(0.25)
   gtk.gdk.threads_enter()
   w=MainWindow(app, port, server)
+  for fn in sys.argv:
+    if not os.path.exists(fn): continue
+    w._do_open(fn)
   gtk.main()
   gtk.gdk.threads_leave()
 
