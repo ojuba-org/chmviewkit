@@ -75,8 +75,9 @@ def sure(msg, w=None):
 
 
 class WV(webkit.WebView):
-  def __init__(self):
+  def __init__(self, key):
     webkit.WebView.__init__(self)
+    self.key=key
     self.links_prompt=True
     self.set_full_content_zoom(True)
     self.connect_after("populate-popup", self.populate_popup)
@@ -180,12 +181,15 @@ class ContentPane (gtk.HPaned):
                                  (gobject.TYPE_OBJECT,))
         }
 
-    def __init__ (self, default_url=None, default_title=None, hp=gtk.POLICY_NEVER, vp=gtk.POLICY_ALWAYS):
+    def __init__ (self, win, default_url=None, default_title=None, hp=gtk.POLICY_NEVER, vp=gtk.POLICY_ALWAYS):
         """initialize the content pane"""
         gtk.HPaned.__init__(self)
+        self.win=win
         self.tabs=gtk.Notebook()
-        self.add1(gtk.Label('here TOC will go'))
+        self.sidepane=gtk.Notebook()
+        self.add1(self.sidepane)
         self.add2(self.tabs)
+        self.sidepane.set_show_tabs(False)
         self.tabs.set_scrollable(True)
         self.default_url=default_url
         self.default_title=default_title
@@ -208,10 +212,11 @@ class ContentPane (gtk.HPaned):
         """creates a new tab with the given webview as its child"""
         self.tabs._construct_tab_view(webview)
 
-    def new_tab (self, url=None):
+    def new_tab (self, url=None, key=None):
         """creates a new page in a new tab"""
         # create the tab content
-        wv = WV()
+        wv = WV(key)
+        #if url: wv.open(url)
         self._construct_tab_view(wv, url)
         return wv
 
@@ -225,7 +230,8 @@ class ContentPane (gtk.HPaned):
         # load the content
         self._hovered_uri = None
         if not url: url=self.default_url
-        if url: wv.open(url)
+        else: wv.open(url)
+        #elif url!=wv.get_property("uri"): wv.open(url)
 
         scrolled_window = gtk.ScrolledWindow()
         scrolled_window.props.hscrollbar_policy = self.hp
@@ -260,7 +266,7 @@ class ContentPane (gtk.HPaned):
             menu.show_all()
 
     def _open_in_new_tab (self, menuitem, view):
-        self.new_tab(self._hovered_uri)
+        self.new_tab(self._hovered_uri, key=view.key)
 
     def _close_tab (self, label, child):
         page_num = self.tabs.page_num(child)
@@ -275,9 +281,14 @@ class ContentPane (gtk.HPaned):
         view = child.get_child()
         frame = view.get_main_frame()
         self.emit("focus-view-load-committed", view, frame)
+        key=view.key
+        if key and self.win.app.chm[key].has_key("pane"):
+          n=self.sidepane.page_num(self.win.app.chm[key]["pane"])
+          if n>=0: self.sidepane.set_current_page(n)
 
     def _hovering_over_link_cb (self, view, title, uri):
         self._hovered_uri = uri
+
 
     def _view_load_committed_cb (self, view, frame):
         self.emit("focus-view-load-committed", view, frame)
@@ -291,12 +302,16 @@ class ContentPane (gtk.HPaned):
         label.set_label_text(title)
 
     def _new_web_view_request_cb (self, web_view, web_frame):
-        view=self.new_tab()
+        view=self.new_tab(key=web_view.key)
         view.connect("web-view-ready", self._new_web_view_ready_cb)
         return view
 
     def _new_web_view_ready_cb (self, web_view):
         self.emit("new-window-requested", web_view)
+
+class BookSidePane(gtk.Label):
+  def __init__(self, app, key):
+    gtk.Label.__init__(self, key)
 
 class MainWindow(gtk.Window):
   def __init__(self, app, port, server):
@@ -315,7 +330,7 @@ class MainWindow(gtk.Window):
     tools=gtk.Toolbar()
     vb.pack_start(tools, False, False, 2)
     
-    self._content= ContentPane(None, _("CHM View Kit"))
+    self._content= ContentPane(self, None, _("CHM View Kit"))
     vb.pack_start(self._content,True, True, 2)
 
     b=gtk.ToolButton(gtk.STOCK_OPEN)
@@ -384,7 +399,12 @@ class MainWindow(gtk.Window):
       key=self.app.load_chm(chmfn)
       fn=self.app.get_toc(key)[0]['local']
     except IOError: return # FIXME: show a nice error to user
-    self._content.new_tab("http://127.0.0.1:%d/%s$/%s" % (self.port, key, fn))
+    self._content.new_tab("http://127.0.0.1:%d/%s$/%s" % (self.port, key, fn), key)
+    pane=BookSidePane(self.app, key)
+    self.app.chm[key]["pane"]=pane
+    n=self._content.sidepane.append_page(pane)
+    self._content.sidepane.get_nth_page(n).show_all()
+    self._content.sidepane.set_current_page(n)
   
   def _do_in_current_view (self, action, *a, **kw):
      n = self._content.tabs.get_current_page()
