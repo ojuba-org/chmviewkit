@@ -640,7 +640,10 @@ def main():
   for fn in sys.argv:
     if not os.path.exists(fn): continue
     w._do_open(fn)
-  gtk.main()
+  try: 
+    gtk.main()
+  except KeyboardInterrupt: 
+    server.running=False
   gtk.gdk.threads_leave()
 
 if __name__ == "__main__":
