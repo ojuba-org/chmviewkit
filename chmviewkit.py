@@ -321,7 +321,7 @@ class BookSidePane(gtk.Notebook):
 
   def build_toc_tree(self):
     app,key=self.app,self.key
-    s = gtk.TreeStore(str,str) # label, url
+    s = gtk.TreeStore(str, str, bool) # label, url
     self.tree=gtk.TreeView(s)
     col=gtk.TreeViewColumn('Files', gtk.CellRendererText(), text=0)
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
@@ -333,7 +333,7 @@ class BookSidePane(gtk.Notebook):
     for e in self.app.get_toc(key):
       while(l and l[-1]>=e['level']): p.pop(); l.pop()
       l.append(e['level'])
-      p.append(s.append(p[-1],(e['name.utf8'], e['local'])))
+      p.append(s.append(p[-1],(e['name.utf8'], e.get('local', ''), e['is_page'])))
     scroll=gtk.ScrolledWindow()
     scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
     scroll.add(self.tree)
@@ -342,8 +342,10 @@ class BookSidePane(gtk.Notebook):
 
   def _toc_cb(self, tree, *a):
     s,i=tree.get_selection().get_selected()
-    url=self.win.gen_url(self.key, s.get_value(i, 1))
-    self.win._content.load(url)
+    is_page=self.win.gen_url(self.key, s.get_value(i, 2))
+    if is_page:
+      url=self.win.gen_url(self.key, s.get_value(i, 1))
+      self.win._content.load(url)
 
 class MainWindow(gtk.Window):
   def __init__(self, app, port, server):
@@ -569,7 +571,8 @@ class ChmWebApp:
           except UnicodeDecodeError: u=param['value'].decode('windows-1256')
           e[param['name'].lower()+'.utf8']=u
       e['level']=level
-      if e.has_key('name') and e.has_key('local'): toc.append(e)
+      e['is_page']=e.has_key('local')
+      if e.has_key('name'): toc.append(e)
     self.chm[key]['toc']=toc
     return toc
 
