@@ -309,9 +309,12 @@ class ContentPane (gtk.HPaned):
     def _new_web_view_ready_cb (self, web_view):
         self.emit("new-window-requested", web_view)
 
-class BookSidePane(gtk.Label):
+class BookSidePane(gtk.Notebook):
   def __init__(self, app, key):
-    gtk.Label.__init__(self, key)
+    gtk.Notebook.__init__(self)
+    self.append_page(gtk.Label("TOC:"+key), gtk.Label(_('Topics Tree')))
+    self.append_page(gtk.Label("IX:"+key), gtk.Label(_('Index')))
+    self.append_page(gtk.Label("Search:"+key), gtk.Label(_('Search')))
 
 class MainWindow(gtk.Window):
   def __init__(self, app, port, server):
