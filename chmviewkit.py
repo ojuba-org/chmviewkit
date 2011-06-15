@@ -379,6 +379,13 @@ class MainWindow(gtk.Window):
     gtk.Window.__init__(self)
     self.set_title(_('CHM View Kit'))
     self.set_default_size(600, 480)
+
+    self.maximize()
+    # add drag-data-recived action
+    self.drag_dest_set(gtk.DEST_DEFAULT_ALL,gtk.target_list_add_uri_targets(),(1<<5)-1)
+    self.connect('drag-data-received', self.drop_data_cb)
+    self.axl = gtk.AccelGroup()
+    self.add_accel_group(self.axl)
     
     vb=gtk.VBox(False,0); self.add(vb)
 
@@ -390,7 +397,10 @@ class MainWindow(gtk.Window):
 
     b=gtk.ToolButton(gtk.STOCK_OPEN)
     b.connect('clicked', self._open_cb)
-    b.set_tooltip_text(_("Open a CHM file"))
+    b.add_accelerator("clicked",self.axl,ord('o'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.set_tooltip_text(_("Open a CHM file	(Ctrl+O)"))
+
+
     tools.insert(b, -1)
 
     # TODO: add navigation buttons (back, forward ..etc.) and zoom buttons
@@ -400,21 +410,27 @@ class MainWindow(gtk.Window):
     img.set_from_stock(gtk.STOCK_ZOOM_IN, gtk.ICON_SIZE_BUTTON)
     b=gtk.ToolButton(icon_widget=img, label=_("Zoom in"))
     b.set_is_important(True)
-    b.set_tooltip_text("Makes things appear bigger")
+    b.add_accelerator("clicked",self.axl,gtk.keysyms.plus,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.add_accelerator("clicked",self.axl,gtk.keysyms.KP_Add,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.set_tooltip_text(_("Makes things appear bigger	(Ctrl++)"))
     b.connect('clicked', lambda a: self._do_in_current_view("zoom_in"))
     tools.insert(b, -1)
 
     img=gtk.Image()
     img.set_from_stock(gtk.STOCK_ZOOM_OUT, gtk.ICON_SIZE_BUTTON)
     b=gtk.ToolButton(icon_widget=img, label=_("Zoom out"))
-    b.set_tooltip_text("Makes things appear smaller")
+    b.add_accelerator("clicked",self.axl,gtk.keysyms.minus,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.add_accelerator("clicked",self.axl,gtk.keysyms.KP_Subtract,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.set_tooltip_text(_("Makes things appear smaller	(Ctrl+-)"))
     b.connect('clicked', lambda a: self._do_in_current_view("zoom_out"))
     tools.insert(b, -1)
 
     img=gtk.Image()
     img.set_from_stock(gtk.STOCK_ZOOM_100, gtk.ICON_SIZE_BUTTON)
     b=gtk.ToolButton(icon_widget=img, label=_("1:1 Zoom"))
-    b.set_tooltip_text("restore original zoom factor")
+    b.add_accelerator("clicked",self.axl,ord('0'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.add_accelerator("clicked",self.axl,gtk.keysyms.KP_0,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.set_tooltip_text(_("restore original zoom factor	(Ctrl+0)"))
     b.connect('clicked', lambda a: self._do_in_current_view("set_zoom_level",1.0))
     tools.insert(b, -1)
 
@@ -423,8 +439,6 @@ class MainWindow(gtk.Window):
     #self._content.new_tab()
 
     self.connect("delete_event", self.quit)
-    #self.drag_dest_set(gtk.DEST_DEFAULT_ALL,targets_l,(1<<5)-1)
-    #self.connect('drag-data-received', self.drop_data_cb)
     
     self.show_all()
 
@@ -451,6 +465,9 @@ class MainWindow(gtk.Window):
   def _open_cb(self, *a):
     if self._show_open_dlg()!=gtk.RESPONSE_ACCEPT: return
     chmfn=self._open_dlg.get_filename()
+    self._do_open(chmfn)
+    
+  def _do_open(self, chmfn):
     fn=""
     try:
       # FIXME: have a single method for this
@@ -458,6 +475,7 @@ class MainWindow(gtk.Window):
       fn=self.app.get_toc(key)[0]['local']  # FIXME: just put cursor to first is_page
     except IOError: return # FIXME: show a nice error to user
     except KeyError: pass
+    except IndexError: pass
     self._content.new_tab(self.gen_url(key, fn), key)
     pane=BookSidePane(self, self.app, key)
     self.app.chm[key]["pane"]=pane
@@ -476,13 +494,11 @@ class MainWindow(gtk.Window):
        view=self._content.tabs.get_nth_page(n).get_child()
        getattr(view, action)(*a,**kw)
 
-  # TODO: add drag and drop support
-  #def drop_data_cb(self, widget, dc, x, y, selection_data, info, t):
-  #  if not self.import_w: self.import_w=ThImportWindow(self)
-  #  for i in selection_data.get_uris():
-  #    self.import_w.add_uri(i)
-  #  self.import_w.show()
-  #  dc.drop_finish (True, t);
+  def drop_data_cb(self, widget, dc, x, y, selection_data, info, t):
+    for chmfn in selection_data.get_uris():
+      if chmfn.startswith('file://'): f=unquote(chmfn[7:]); self._do_open(f)
+      else: print "Protocol not supported in [%s]" % chmfn
+    dc.drop_finish (True, t);
 
   def quit(self,*args):
     self.server.running=False
@@ -574,7 +590,7 @@ class ChmWebApp:
     p=self._p_re
     level=0
     toc=[]
-    for i in li.split(html):
+    for i in li.split(html or ""):
       e={}
       ul=i.lower()
       if ul.startswith('<ul'): level+=1
