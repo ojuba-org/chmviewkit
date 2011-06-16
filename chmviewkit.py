@@ -453,9 +453,29 @@ class MainWindow(gtk.Window):
     b.connect('clicked', self._open_cb)
     b.add_accelerator("clicked",self.axl,ord('o'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
     b.set_tooltip_text(_("Open a CHM file	(Ctrl+O)"))
-
-
     tools.insert(b, -1)
+
+    b=gtk.ToolButton(gtk.STOCK_PRINT)
+    b.connect('clicked', lambda a: self._do_in_current_view("execute_script", 'window.print();'))
+    b.add_accelerator("clicked",self.axl,ord('p'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.set_tooltip_text(_("Print current page	(Ctrl+P)"))
+    tools.insert(b, -1)
+
+    tools.insert(gtk.SeparatorToolItem(), -1)
+
+    b=gtk.ToolButton(gtk.STOCK_GO_BACK)
+    b.connect('clicked', lambda a: self._do_in_current_view("go_back"))
+    b.add_accelerator("clicked",self.axl, gtk.keysyms.leftarrow, gtk.gdk.CONTROL_MASK, gtk.ACCEL_VISIBLE)
+    b.set_tooltip_text(_("Go Back"))
+    tools.insert(b, -1)
+
+    b=gtk.ToolButton(gtk.STOCK_GO_FORWARD)
+    b.connect('clicked', lambda a: self._do_in_current_view("go_forward"))
+    b.add_accelerator("clicked",self.axl, gtk.keysyms.rightarrow, gtk.gdk.CONTROL_MASK, gtk.ACCEL_VISIBLE)
+    b.set_tooltip_text(_("Go Forward"))
+    tools.insert(b, -1)
+
+    tools.insert(gtk.SeparatorToolItem(), -1)
 
     # TODO: add navigation buttons (back, forward ..etc.) and zoom buttons
     #tools.insert(gtk.SeparatorToolItem(), -1)
