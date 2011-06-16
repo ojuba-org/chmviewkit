@@ -337,6 +337,7 @@ class BookSidePane(gtk.Notebook):
     self.ix.insert_column(col, -1)
     self.ix.set_enable_search(True)
     self.ix.set_search_column(1)
+    self.ix.set_headers_visible(False)
     p=[None]
     l=[]
     for e in self.app.get_ix(key):
@@ -366,6 +367,7 @@ class BookSidePane(gtk.Notebook):
     self.tree.insert_column(col, -1)
     self.tree.set_enable_search(True)
     self.tree.set_search_column(1)
+    self.tree.set_headers_visible(False)
     p=[None]
     l=[]
     for e in self.app.get_toc(key):
