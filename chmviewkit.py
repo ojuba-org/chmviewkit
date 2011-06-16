@@ -321,9 +321,9 @@ class BookSidePane(gtk.Notebook):
 
   def build_ix(self):
     app,key=self.app,self.key
-    s = gtk.TreeStore(str, str, bool, float) # label, url
+    s = gtk.ListStore(str, str, bool, float) # label, url
     self.ix=gtk.TreeView(s)
-    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), text=0)
+    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), text=0, scale=3)
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
@@ -332,8 +332,9 @@ class BookSidePane(gtk.Notebook):
     l=[]
     for e in self.app.get_ix(key):
       while(l and l[-1]>=e['level']): p.pop(); l.pop()
+      p.append(s.append(((" "*len(l))+e['name.utf8'], e.get('local', ''), e['is_page'], max(0.5, 1.0-0.0625*len(l)) )))
       l.append(e['level'])
-      p.append(s.append(p[-1],(e['name.utf8'], e.get('local', ''), e['is_page'], 1.0)))
+
     scroll=gtk.ScrolledWindow()
     scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
     scroll.add(self.ix)
