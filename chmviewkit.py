@@ -324,7 +324,7 @@ class BookSidePane(gtk.Notebook):
     self.key=key
     self.append_page(self.build_toc_tree(), gtk.Label(_('Topics Tree')))
     self.append_page(self.build_ix(), gtk.Label(_('Index')))
-    self.append_page(gtk.Label("Search:"+key), gtk.Label(_('Search')))
+    self.append_page(self.build_search_pane(), gtk.Label(_('Search')))
 
   def build_ix(self):
     app,key=self.app,self.key
@@ -379,6 +379,41 @@ class BookSidePane(gtk.Notebook):
     scroll.add(self.tree)
     self.tree.connect("cursor-changed", self._toc_cb)
     return scroll
+
+  def _search_cb(self, e):
+    m=self.results.get_model()
+    txt=e.get_text().strip()
+    s,r=self.app.get_chmf(self.key).Search(txt)
+    if not s: print "no res", r; return
+    m.clear()
+    for k in r:
+      try: ku=k.decode('utf-8')
+      except: ku=k.decode('windows-1256')
+      m.append(((ku, normalize(ku), r[k], True, 1.0, )))
+
+  def build_search_pane(self):
+    vb=gtk.VBox(False, 4)
+    hb=gtk.HBox(False, 2); vb.pack_start(hb, False, False, 2)
+    self.search_e=e=gtk.Entry()
+    hb.pack_start(e, False, False, 2)
+    s = gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
+    self.results=gtk.TreeView(s)
+    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), text=0, scale=4)
+    col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+    col.set_resizable(True)
+    col.set_expand(True)
+    self.results.insert_column(col, -1)
+    self.results.set_enable_search(True)
+    self.results.set_search_column(1)
+    self.results.set_headers_visible(False)
+    self.results.connect("cursor-changed", self._toc_cb)
+    e.connect('activate', self._search_cb)
+
+    scroll=gtk.ScrolledWindow()
+    scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+    scroll.add(self.results)
+    vb.pack_start(scroll, True, True, 2)
+    return vb
 
   def _toc_cb(self, tree, *a):
     s,i=tree.get_selection().get_selected()
