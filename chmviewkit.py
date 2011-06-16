@@ -321,7 +321,7 @@ class BookSidePane(gtk.Notebook):
 
   def build_ix(self):
     app,key=self.app,self.key
-    s = gtk.ListStore(str, str, bool, float) # label, url
+    s = gtk.ListStore(str, str, bool, float) # label, url, is_page, scale
     self.ix=gtk.TreeView(s)
     col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), text=0, scale=3)
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
@@ -343,7 +343,7 @@ class BookSidePane(gtk.Notebook):
 
   def build_toc_tree(self):
     app,key=self.app,self.key
-    s = gtk.TreeStore(str, str, bool) # label, url
+    s = gtk.TreeStore(str, str, bool) # label, url, is_page
     self.tree=gtk.TreeView(s)
     col=gtk.TreeViewColumn('Topics', gtk.CellRendererText(), text=0)
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
