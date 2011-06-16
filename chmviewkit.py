@@ -309,6 +309,13 @@ class ContentPane (gtk.HPaned):
     def _new_web_view_ready_cb (self, web_view):
         self.emit("new-window-requested", web_view)
 
+normalize_tb={
+65: 97, 66: 98, 67: 99, 68: 100, 69: 101, 70: 102, 71: 103, 72: 104, 73: 105, 74: 106, 75: 107, 76: 108, 77: 109, 78: 110, 79: 111, 80: 112, 81: 113, 82: 114, 83: 115, 84: 116, 85: 117, 86: 118, 87: 119, 88: 120, 89: 121, 90: 122,
+1600: None, 1569: 1575, 1570: 1575, 1571: 1575, 1572: 1575, 1573: 1575, 1574: 1575, 1577: 1607, 1611: None, 1612: None, 1613: None, 1614: None, 1615: None, 1616: None, 1617: None, 1618: None, 1609: 1575}
+
+def normalize(s): return s.translate(normalize_tb)
+
+
 class BookSidePane(gtk.Notebook):
   def __init__(self, win, app, key):
     gtk.Notebook.__init__(self)
@@ -321,18 +328,25 @@ class BookSidePane(gtk.Notebook):
 
   def build_ix(self):
     app,key=self.app,self.key
-    s = gtk.ListStore(str, str, bool, float) # label, url, is_page, scale
+    s = gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
     self.ix=gtk.TreeView(s)
-    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), text=0, scale=3)
+    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), text=0, scale=4)
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
     self.ix.insert_column(col, -1)
+    self.ix.set_enable_search(True)
+    self.ix.set_search_column(1)
     p=[None]
     l=[]
     for e in self.app.get_ix(key):
       while(l and l[-1]>=e['level']): p.pop(); l.pop()
-      p.append(s.append(((" "*len(l))+e['name.utf8'], e.get('local', ''), e['is_page'], max(0.5, 1.0-0.0625*len(l)) )))
+      p.append(s.append((
+        (" "*len(l))+e['name.utf8'],
+        normalize(e['name.utf8'].lower()),
+        e.get('local', ''),
+        e['is_page'],
+        max(0.5, 1.0-0.0625*len(l)), )))
       l.append(e['level'])
 
     scroll=gtk.ScrolledWindow()
@@ -340,22 +354,24 @@ class BookSidePane(gtk.Notebook):
     scroll.add(self.ix)
     self.ix.connect("cursor-changed", self._toc_cb)
     return scroll
-
+  
   def build_toc_tree(self):
     app,key=self.app,self.key
-    s = gtk.TreeStore(str, str, bool) # label, url, is_page
+    s = gtk.TreeStore(str, str, str, bool) # label, normalized, url, is_page
     self.tree=gtk.TreeView(s)
     col=gtk.TreeViewColumn('Topics', gtk.CellRendererText(), text=0)
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
     self.tree.insert_column(col, -1)
+    self.tree.set_enable_search(True)
+    self.tree.set_search_column(1)
     p=[None]
     l=[]
     for e in self.app.get_toc(key):
       while(l and l[-1]>=e['level']): p.pop(); l.pop()
       l.append(e['level'])
-      p.append(s.append(p[-1],(e['name.utf8'], e.get('local', ''), e['is_page'])))
+      p.append(s.append(p[-1],(e['name.utf8'], normalize(e['name.utf8'].lower()), e.get('local', ''), e['is_page'])))
     scroll=gtk.ScrolledWindow()
     scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
     scroll.add(self.tree)
@@ -364,9 +380,9 @@ class BookSidePane(gtk.Notebook):
 
   def _toc_cb(self, tree, *a):
     s,i=tree.get_selection().get_selected()
-    is_page=self.win.gen_url(self.key, s.get_value(i, 2))
+    is_page=self.win.gen_url(self.key, s.get_value(i, 3))
     if is_page:
-      url=self.win.gen_url(self.key, s.get_value(i, 1))
+      url=self.win.gen_url(self.key, s.get_value(i, 2))
       self.win._content.load(url)
 
 class MainWindow(gtk.Window):
