@@ -388,7 +388,7 @@ class BookSidePane(gtk.Notebook):
     m.clear()
     for k in r:
       try: ku=k.decode('utf-8')
-      except: ku=k.decode('windows-1256')
+      except UnicodeDecodeError: ku=k.decode('windows-1256')
       m.append(((ku, normalize(ku), r[k], True, 1.0, )))
 
   def build_search_pane(self):
