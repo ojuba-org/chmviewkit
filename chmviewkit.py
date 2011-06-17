@@ -510,12 +510,24 @@ class MainWindow(gtk.Window):
 
     tools.insert(gtk.SeparatorToolItem(), -1)
 
+    self.search_e=e=gtk.Entry()
+    e.connect('activate', self.search_cb)
+    b=gtk.ToolItem()
+    b.add(e)
+    tools.insert(b, -1)
+
     #self._content.new_tab()
 
     self.connect("delete_event", self.quit)
     
     self.show_all()
 
+  def search_cb(self, e):
+    txt=e.get_text()
+    # returns False if not found
+    self._do_in_current_view("search_text", txt, False, True, True) # txt, case, forward, wrap
+    
+    
   def _show_open_dlg(self, *a):
     if self._open_dlg:
       return self._open_dlg.run()
@@ -559,9 +571,9 @@ class MainWindow(gtk.Window):
   
   def _do_in_current_view (self, action, *a, **kw):
      n = self._content.tabs.get_current_page()
-     if n<0: return
+     if n<0: return None
      view=self._content.tabs.get_nth_page(n).get_child()
-     getattr(view, action)(*a,**kw)
+     return getattr(view, action)(*a,**kw)
 
   def _do_in_all_views (self, action, *a, **kw):
      for n in range(self._content.tabs.get_n_pages()):
