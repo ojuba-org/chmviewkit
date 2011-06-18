@@ -220,6 +220,10 @@ class ContentPane (gtk.HPaned):
         self._construct_tab_view(wv, url)
         return wv
 
+    def _update_buttons(self, view):
+        self.win.go_back_b.set_sensitive(view.can_go_back())
+        self.win.go_forward_b.set_sensitive(view.can_go_forward())
+
     def _construct_tab_view (self, wv, url=None, title=None):
         wv.connect("hovering-over-link", self._hovering_over_link_cb)
         wv.connect("populate-popup", self._populate_page_popup_cb)
@@ -285,13 +289,16 @@ class ContentPane (gtk.HPaned):
         if key and self.win.app.chm[key].has_key("pane"):
           n=self.sidepane.page_num(self.win.app.chm[key]["pane"])
           if n>=0: self.sidepane.set_current_page(n)
+        self._update_buttons(view)
 
     def _hovering_over_link_cb (self, view, title, uri):
         self._hovered_uri = uri
 
 
     def _view_load_committed_cb (self, view, frame):
+        self._update_buttons(view)
         self.emit("focus-view-load-committed", view, frame)
+
 
     def _view_load_finished_cb(self, view, frame):
         child = self.tabs.get_nth_page(self.tabs.get_current_page())
@@ -463,13 +470,16 @@ class MainWindow(gtk.Window):
 
     tools.insert(gtk.SeparatorToolItem(), -1)
 
-    b=gtk.ToolButton(gtk.STOCK_GO_BACK)
+    self.go_back_b=b=gtk.ToolButton(gtk.STOCK_GO_BACK)
+    b.set_sensitive(False)
     b.connect('clicked', lambda a: self._do_in_current_view("go_back"))
     b.add_accelerator("clicked",self.axl, gtk.keysyms.Left, gtk.gdk.META_MASK, gtk.ACCEL_VISIBLE)
     b.set_tooltip_text(u"%s\t‪%s‬" % (_("Go Back"), "(Alt+Left)"))
+    
     tools.insert(b, -1)
 
-    b=gtk.ToolButton(gtk.STOCK_GO_FORWARD)
+    self.go_forward_b=b=gtk.ToolButton(gtk.STOCK_GO_FORWARD)
+    b.set_sensitive(False)
     b.connect('clicked', lambda a: self._do_in_current_view("go_forward"))
     b.add_accelerator("clicked",self.axl, gtk.keysyms.Right, gtk.gdk.META_MASK, gtk.ACCEL_VISIBLE)
     b.set_tooltip_text(u"%s\t‪%s‬" % (_("Go Forward"), "(Alt+Right)"))
