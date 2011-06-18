@@ -452,27 +452,27 @@ class MainWindow(gtk.Window):
     b=gtk.ToolButton(gtk.STOCK_OPEN)
     b.connect('clicked', self._open_cb)
     b.add_accelerator("clicked",self.axl,ord('o'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b.set_tooltip_text(_("Open a CHM file	(Ctrl+O)"))
+    b.set_tooltip_text(u"%s\t‪%s‬" % (_("Open a CHM file"), "(Ctrl+O)" ))
     tools.insert(b, -1)
 
     b=gtk.ToolButton(gtk.STOCK_PRINT)
     b.connect('clicked', lambda a: self._do_in_current_view("execute_script", 'window.print();'))
     b.add_accelerator("clicked",self.axl,ord('p'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b.set_tooltip_text(_("Print current page	(Ctrl+P)"))
+    b.set_tooltip_text(u"%s\t‪%s‬" % (_("Print current page"), "(Ctrl+P)" ))
     tools.insert(b, -1)
 
     tools.insert(gtk.SeparatorToolItem(), -1)
 
     b=gtk.ToolButton(gtk.STOCK_GO_BACK)
     b.connect('clicked', lambda a: self._do_in_current_view("go_back"))
-    b.add_accelerator("clicked",self.axl, gtk.keysyms.leftarrow, gtk.gdk.CONTROL_MASK, gtk.ACCEL_VISIBLE)
-    b.set_tooltip_text(_("Go Back"))
+    b.add_accelerator("clicked",self.axl, gtk.keysyms.Left, gtk.gdk.META_MASK, gtk.ACCEL_VISIBLE)
+    b.set_tooltip_text(u"%s\t‪%s‬" % (_("Go Back"), "(Alt+Left)"))
     tools.insert(b, -1)
 
     b=gtk.ToolButton(gtk.STOCK_GO_FORWARD)
     b.connect('clicked', lambda a: self._do_in_current_view("go_forward"))
-    b.add_accelerator("clicked",self.axl, gtk.keysyms.rightarrow, gtk.gdk.CONTROL_MASK, gtk.ACCEL_VISIBLE)
-    b.set_tooltip_text(_("Go Forward"))
+    b.add_accelerator("clicked",self.axl, gtk.keysyms.Right, gtk.gdk.META_MASK, gtk.ACCEL_VISIBLE)
+    b.set_tooltip_text(u"%s\t‪%s‬" % (_("Go Forward"), "(Alt+Right)"))
     tools.insert(b, -1)
 
     tools.insert(gtk.SeparatorToolItem(), -1)
@@ -484,9 +484,10 @@ class MainWindow(gtk.Window):
     img.set_from_stock(gtk.STOCK_ZOOM_IN, gtk.ICON_SIZE_BUTTON)
     b=gtk.ToolButton(icon_widget=img, label=_("Zoom in"))
     b.set_is_important(True)
+    b.add_accelerator("clicked",self.axl,gtk.keysyms.equal,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
     b.add_accelerator("clicked",self.axl,gtk.keysyms.plus,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
     b.add_accelerator("clicked",self.axl,gtk.keysyms.KP_Add,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b.set_tooltip_text(_("Makes things appear bigger	(Ctrl++)"))
+    b.set_tooltip_text(u"%s\t‪%s‬" % (_("Makes things appear bigger"), "(Ctrl++)"))
     b.connect('clicked', lambda a: self._do_in_current_view("zoom_in"))
     tools.insert(b, -1)
 
@@ -495,7 +496,7 @@ class MainWindow(gtk.Window):
     b=gtk.ToolButton(icon_widget=img, label=_("Zoom out"))
     b.add_accelerator("clicked",self.axl,gtk.keysyms.minus,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
     b.add_accelerator("clicked",self.axl,gtk.keysyms.KP_Subtract,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b.set_tooltip_text(_("Makes things appear smaller	(Ctrl+-)"))
+    b.set_tooltip_text(u"%s\t‪%s‬" % (_("Makes things appear smaller"), "(Ctrl+-)"))
     b.connect('clicked', lambda a: self._do_in_current_view("zoom_out"))
     tools.insert(b, -1)
 
@@ -504,7 +505,7 @@ class MainWindow(gtk.Window):
     b=gtk.ToolButton(icon_widget=img, label=_("1:1 Zoom"))
     b.add_accelerator("clicked",self.axl,ord('0'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
     b.add_accelerator("clicked",self.axl,gtk.keysyms.KP_0,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b.set_tooltip_text(_("restore original zoom factor	(Ctrl+0)"))
+    b.set_tooltip_text(u"%s\t‪%s‬" % (_("restore original zoom factor"), "(Ctrl+0)"))
     b.connect('clicked', lambda a: self._do_in_current_view("set_zoom_level",1.0))
     tools.insert(b, -1)
 

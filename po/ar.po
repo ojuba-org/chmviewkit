@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-17 20:40+0300\n"
+"POT-Creation-Date: 2011-06-18 12:51+0300\n"
 "PO-Revision-Date: 2011-06-14 15:23+0300\n"
 "Last-Translator: Muayyad Alsadi<alsadi@ojuba.org>\n"
 "Language-Team: LANGUAGE <ar@li.org>\n"
@@ -47,12 +47,12 @@ msgid "Search"
 msgstr "بحث"
 
 #: ../chmviewkit.py:455
-msgid "Open a CHM file\t(Ctrl+O)"
-msgstr "فتح ملف CHM\t(Ctrl+O)"
+msgid "Open a CHM file"
+msgstr "فتح ملف CHM"
 
 #: ../chmviewkit.py:461
-msgid "Print current page\t(Ctrl+P)"
-msgstr "طباعة الصفحة الحالية\t(Ctrl+P)"
+msgid "Print current page"
+msgstr "طباعة الصفحة الحالية"
 
 #: ../chmviewkit.py:469
 msgid "Go Back"
@@ -66,31 +66,31 @@ msgstr "أمام"
 msgid "Zoom in"
 msgstr "تصغير"
 
-#: ../chmviewkit.py:489
-msgid "Makes things appear bigger\t(Ctrl++)"
-msgstr "يظهر الأشياء أكبر\t(Ctrl++)"
+#: ../chmviewkit.py:490
+msgid "Makes things appear bigger"
+msgstr "يظهر الأشياء أكبر"
 
-#: ../chmviewkit.py:495
+#: ../chmviewkit.py:496
 msgid "Zoom out"
 msgstr "تكبير"
 
-#: ../chmviewkit.py:498
-msgid "Makes things appear smaller\t(Ctrl+-)"
-msgstr "يظهر الأشياء أصغر\t(Ctrl+-)"
+#: ../chmviewkit.py:499
+msgid "Makes things appear smaller"
+msgstr "يظهر الأشياء أصغر"
 
-#: ../chmviewkit.py:504
+#: ../chmviewkit.py:505
 msgid "1:1 Zoom"
 msgstr "تقريب 1:1"
 
-#: ../chmviewkit.py:507
-msgid "restore original zoom factor\t(Ctrl+0)"
-msgstr "استعادة معامل التقريب\t(Ctrl+0)"
+#: ../chmviewkit.py:508
+msgid "restore original zoom factor"
+msgstr "استعادة معامل التقريب"
 
-#: ../chmviewkit.py:536
+#: ../chmviewkit.py:537
 msgid "CHM Files"
 msgstr "ملفات CHM"
 
-#: ../chmviewkit.py:540
+#: ../chmviewkit.py:541
 msgid "All files"
 msgstr "كل الملفات"
 
