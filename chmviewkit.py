@@ -297,8 +297,24 @@ class ContentPane (gtk.HPaned):
 
     def _view_load_committed_cb (self, view, frame):
         self._update_buttons(view)
+        self._update_sidepan(frame)
         self.emit("focus-view-load-committed", view, frame)
 
+    def _update_sidepan(self, frame):
+        l=frame.get_uri().split('/', 3)
+        if len(l)!=4: return
+        l=l[3].split('$/', 1)
+        if len(l)!=2: return
+        key,sub_uri = l
+        def checkLine(model, path, i, tree):
+           if sub_uri == store.get_value(i,2):
+               tree.expand_to_path(path)
+               tree.scroll_to_cell(path)
+               tree.get_selection().select_iter(i)
+        pane=self.win.app.chm[key]["pane"]
+        for t in (pane.tree, pane.ix, pane.results):
+          store = t.get_model()
+          store.foreach(checkLine, t)
 
     def _view_load_finished_cb(self, view, frame):
         child = self.tabs.get_nth_page(self.tabs.get_current_page())
