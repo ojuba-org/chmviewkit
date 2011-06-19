@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-18 12:51+0300\n"
+"POT-Creation-Date: 2011-06-19 17:45+0300\n"
 "PO-Revision-Date: 2011-06-14 15:23+0300\n"
 "Last-Translator: Muayyad Alsadi<alsadi@ojuba.org>\n"
 "Language-Team: LANGUAGE <ar@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../chmviewkit.desktop.in.h:1 ../chmviewkit.py:434 ../chmviewkit.py:449
+#: ../chmviewkit.desktop.in.h:1 ../chmviewkit.py:461 ../chmviewkit.py:476
 msgid "CHM View Kit"
 msgstr ""
 
@@ -30,67 +30,66 @@ msgstr "عارض CHM"
 msgid "open [%s] in external browser"
 msgstr "فتح [%s] في متصفح خارجي"
 
-#: ../chmviewkit.py:263
+#: ../chmviewkit.py:267
 msgid "Open Link in New Tab"
 msgstr "فتح في لسان جديد"
 
-#: ../chmviewkit.py:325
+#: ../chmviewkit.py:351
 msgid "Topics Tree"
 msgstr "شجرة الموضوعات"
 
-#: ../chmviewkit.py:326
+#: ../chmviewkit.py:352
 msgid "Index"
 msgstr "الفهرس"
 
-#: ../chmviewkit.py:327
+#: ../chmviewkit.py:353
 msgid "Search"
 msgstr "بحث"
 
-#: ../chmviewkit.py:455
+#: ../chmviewkit.py:482
 msgid "Open a CHM file"
 msgstr "فتح ملف CHM"
 
-#: ../chmviewkit.py:461
+#: ../chmviewkit.py:488
 msgid "Print current page"
 msgstr "طباعة الصفحة الحالية"
 
-#: ../chmviewkit.py:469
+#: ../chmviewkit.py:497
 msgid "Go Back"
 msgstr "عودة"
 
-#: ../chmviewkit.py:475
+#: ../chmviewkit.py:505
 msgid "Go Forward"
 msgstr "أمام"
 
-#: ../chmviewkit.py:485
+#: ../chmviewkit.py:515
 msgid "Zoom in"
 msgstr "تصغير"
 
-#: ../chmviewkit.py:490
+#: ../chmviewkit.py:520
 msgid "Makes things appear bigger"
 msgstr "يظهر الأشياء أكبر"
 
-#: ../chmviewkit.py:496
+#: ../chmviewkit.py:526
 msgid "Zoom out"
 msgstr "تكبير"
 
-#: ../chmviewkit.py:499
+#: ../chmviewkit.py:529
 msgid "Makes things appear smaller"
 msgstr "يظهر الأشياء أصغر"
 
-#: ../chmviewkit.py:505
+#: ../chmviewkit.py:535
 msgid "1:1 Zoom"
 msgstr "تقريب 1:1"
 
-#: ../chmviewkit.py:508
+#: ../chmviewkit.py:538
 msgid "restore original zoom factor"
 msgstr "استعادة معامل التقريب"
 
-#: ../chmviewkit.py:537
+#: ../chmviewkit.py:567
 msgid "CHM Files"
 msgstr "ملفات CHM"
 
-#: ../chmviewkit.py:541
+#: ../chmviewkit.py:571
 msgid "All files"
 msgstr "كل الملفات"
-

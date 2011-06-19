@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-18 12:51+0300\n"
+"POT-Creation-Date: 2011-06-19 17:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../chmviewkit.desktop.in.h:1 ../chmviewkit.py:434 ../chmviewkit.py:449
+#: ../chmviewkit.desktop.in.h:1 ../chmviewkit.py:461 ../chmviewkit.py:476
 msgid "CHM View Kit"
 msgstr ""
 
@@ -30,66 +30,66 @@ msgstr ""
 msgid "open [%s] in external browser"
 msgstr ""
 
-#: ../chmviewkit.py:263
+#: ../chmviewkit.py:267
 msgid "Open Link in New Tab"
 msgstr ""
 
-#: ../chmviewkit.py:325
+#: ../chmviewkit.py:351
 msgid "Topics Tree"
 msgstr ""
 
-#: ../chmviewkit.py:326
+#: ../chmviewkit.py:352
 msgid "Index"
 msgstr ""
 
-#: ../chmviewkit.py:327
+#: ../chmviewkit.py:353
 msgid "Search"
 msgstr ""
 
-#: ../chmviewkit.py:455
+#: ../chmviewkit.py:482
 msgid "Open a CHM file"
 msgstr ""
 
-#: ../chmviewkit.py:461
+#: ../chmviewkit.py:488
 msgid "Print current page"
 msgstr ""
 
-#: ../chmviewkit.py:469
+#: ../chmviewkit.py:497
 msgid "Go Back"
 msgstr ""
 
-#: ../chmviewkit.py:475
+#: ../chmviewkit.py:505
 msgid "Go Forward"
 msgstr ""
 
-#: ../chmviewkit.py:485
+#: ../chmviewkit.py:515
 msgid "Zoom in"
 msgstr ""
 
-#: ../chmviewkit.py:490
+#: ../chmviewkit.py:520
 msgid "Makes things appear bigger"
 msgstr ""
 
-#: ../chmviewkit.py:496
+#: ../chmviewkit.py:526
 msgid "Zoom out"
 msgstr ""
 
-#: ../chmviewkit.py:499
+#: ../chmviewkit.py:529
 msgid "Makes things appear smaller"
 msgstr ""
 
-#: ../chmviewkit.py:505
+#: ../chmviewkit.py:535
 msgid "1:1 Zoom"
 msgstr ""
 
-#: ../chmviewkit.py:508
+#: ../chmviewkit.py:538
 msgid "restore original zoom factor"
 msgstr ""
 
-#: ../chmviewkit.py:537
+#: ../chmviewkit.py:567
 msgid "CHM Files"
 msgstr ""
 
-#: ../chmviewkit.py:541
+#: ../chmviewkit.py:571
 msgid "All files"
 msgstr ""

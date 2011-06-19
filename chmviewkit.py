@@ -312,9 +312,11 @@ class ContentPane (gtk.HPaned):
                tree.scroll_to_cell(path)
                tree.get_selection().select_iter(i)
         pane=self.win.app.chm[key]["pane"]
+        pane.working=True
         for t in (pane.tree, pane.ix, pane.results):
           store = t.get_model()
           store.foreach(checkLine, t)
+        pane.working=False
 
     def _view_load_finished_cb(self, view, frame):
         child = self.tabs.get_nth_page(self.tabs.get_current_page())
@@ -342,6 +344,7 @@ def normalize(s): return s.translate(normalize_tb)
 class BookSidePane(gtk.Notebook):
   def __init__(self, win, app, key):
     gtk.Notebook.__init__(self)
+    self.working=False
     self.win=win
     self.app=app
     self.key=key
@@ -439,6 +442,7 @@ class BookSidePane(gtk.Notebook):
     return vb
 
   def _toc_cb(self, tree, *a):
+    if self.working: return
     s,i=tree.get_selection().get_selected()
     is_page=self.win.gen_url(self.key, s.get_value(i, 3))
     if is_page:
