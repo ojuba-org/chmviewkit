@@ -1,12 +1,12 @@
-[Desktop Entry]
-Type=Application
-Categories=GNOME;GTK;Office;Viewer;
-_Name=CHM View Kit
-_GenericName=CHM Viewer
-Terminal=false
-TryExec=chmviewkit %F
-Exec=chmviewkit %F
-Icon=chmviewkit
-StartupNotify=false
-MimeType=application/chm;application/x-chm;
 
+[Desktop Entry]
+_Name=ChmViewKit
+_GenericName=CHM Viewer
+_Comment=HTML Help(CHM) viewer
+Exec=chmviewkit %F
+Terminal=false
+Type=Application
+Icon=chmviewkit
+StartupNotify=true
+Categories=Office;Viewer;
+MimeType=application/chm;application/x-chm;
