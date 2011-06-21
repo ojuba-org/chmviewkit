@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-19 17:45+0300\n"
+"POT-Creation-Date: 2011-06-19 23:20+0300\n"
 "PO-Revision-Date: 2011-06-14 15:23+0300\n"
 "Last-Translator: Muayyad Alsadi<alsadi@ojuba.org>\n"
 "Language-Team: LANGUAGE <ar@li.org>\n"
@@ -17,13 +17,17 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../chmviewkit.desktop.in.h:1 ../chmviewkit.py:461 ../chmviewkit.py:476
-msgid "CHM View Kit"
-msgstr ""
-
-#: ../chmviewkit.desktop.in.h:2
+#: ../chmviewkit.desktop.in.h:1
 msgid "CHM Viewer"
 msgstr "عارض CHM"
+
+#: ../chmviewkit.desktop.in.h:2
+msgid "ChmViewKit"
+msgstr ""
+
+#: ../chmviewkit.desktop.in.h:3
+msgid "HTML Help(CHM) viewer"
+msgstr ""
 
 #: ../chmviewkit.py:92 ../chmviewkit.py:101
 #, python-format
@@ -45,6 +49,10 @@ msgstr "الفهرس"
 #: ../chmviewkit.py:353
 msgid "Search"
 msgstr "بحث"
+
+#: ../chmviewkit.py:461 ../chmviewkit.py:476
+msgid "CHM View Kit"
+msgstr ""
 
 #: ../chmviewkit.py:482
 msgid "Open a CHM file"
