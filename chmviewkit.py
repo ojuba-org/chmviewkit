@@ -31,7 +31,7 @@ from urllib import unquote
 from urlparse import urlparse, urlsplit
 
 from paste import httpserver
-from chm import chm
+from chm import chm, chmlib
 
 def async_gtk_call(f):
     def worker((function, args, kwargs)):
@@ -543,20 +543,25 @@ class MainWindow(gtk.Window):
 
     self.search_e=e=gtk.Entry()
     e.connect('activate', self.search_cb)
+    e.add_accelerator("activate",self.axl,gtk.keysyms.g,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
     b=gtk.ToolItem()
     b.add(e)
     tools.insert(b, -1)
 
-    #self._content.new_tab()
+    # Add CTRL+F accelerator for focusing search entry
+    # TODO: Add function to get selected text then focus
+    self.axl.connect_group(gtk.keysyms.F, gtk.gdk.CONTROL_MASK, gtk.ACCEL_VISIBLE, lambda *a: self.search_e.grab_focus())
+    # Add CTRL+SHIFT+G accelerator for backward search
+    self.axl.connect_group(gtk.keysyms.g, gtk.gdk.CONTROL_MASK|gtk.gdk.SHIFT_MASK, gtk.ACCEL_VISIBLE, lambda *a: self.search_cb(None, False))
 
     self.connect("delete_event", self.quit)
     
     self.show_all()
 
-  def search_cb(self, e):
-    txt=e.get_text()
+  def search_cb(self, e, forward=True):
+    txt=self.search_e.get_text()
     # returns False if not found
-    self._do_in_current_view("search_text", txt, False, True, True) # txt, case, forward, wrap
+    self._do_in_current_view("search_text", txt, False, forward, True) # txt, case, forward, wrap
     
     
   def _show_open_dlg(self, *a):
@@ -726,10 +731,22 @@ class ChmWebApp:
       if e.has_key('name'): toc.append(e)
     return toc
 
+  def _enum_cb(self, f, u, d):
+    fn=u.path
+    if fn.startswith('/'): fn=fn[1:]
+    ext=(fn[fn.rfind('.'):][1:].lower())[:3]
+    if ext=='htm': d.append(fn)
+
   def get_toc(self, key):
     chmf=self.get_chmf(key)
     if self.chm[key].has_key('toc'): return self.chm[key]['toc']
+    d=[]
+    chmlib.chm_enumerate_dir(chmf.file, '/', chmlib.CHM_ENUMERATE_NORMAL , self._enum_cb, d)
     toc=self._parse_toc_html(chmf.GetTopicsTree())
+    if not toc:
+      for i in d:
+        e={'is_page': True, 'level': 1, 'name.utf8': i.decode('utf-8'), 'local': i, 'name': i}
+        toc.append(e)
     self.chm[key]['toc']=toc
     return toc
 
