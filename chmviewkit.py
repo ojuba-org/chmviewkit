@@ -83,6 +83,7 @@ def error(msg, w=None):
 class WV(webkit.WebView):
   def __init__(self, key):
     webkit.WebView.__init__(self)
+    self._lock=threading.Lock()
     self.key=key
     self.links_prompt=True
     self.set_full_content_zoom(True)
@@ -108,6 +109,18 @@ class WV(webkit.WebView):
       run_in_bg("%s '%s'" % (broswer ,uri))
       return 1
     return 0
+
+  def eval_js(self, e):
+     """
+     can be used to eval a javascript expression
+     eg. to obtain value of a javascript variable given its name
+     """
+     self._lock.acquire()
+     self.execute_script('$_eval_js_old_title=document.title;document.title=%s;' % e)
+     r = self.get_main_frame().get_title()
+     self.execute_script('document.title=$_eval_js_old_title;')
+     self._lock.release()
+     return r
 
 
   def populate_popup(self, view, menu):
@@ -556,13 +569,18 @@ class MainWindow(gtk.Window):
 
     # Add CTRL+F accelerator for focusing search entry
     # TODO: Add function to get selected text then focus
-    self.axl.connect_group(gtk.keysyms.F, gtk.gdk.CONTROL_MASK, gtk.ACCEL_VISIBLE, lambda *a: self.search_e.grab_focus())
+    self.axl.connect_group(gtk.keysyms.F, gtk.gdk.CONTROL_MASK, gtk.ACCEL_VISIBLE, self.find_cb)
     # Add CTRL+SHIFT+G accelerator for backward search
     self.axl.connect_group(gtk.keysyms.g, gtk.gdk.CONTROL_MASK|gtk.gdk.SHIFT_MASK, gtk.ACCEL_VISIBLE, lambda *a: self.search_cb(None, False))
 
     self.connect("delete_event", self.quit)
     
     self.show_all()
+
+  def find_cb(self, *a):
+    self.search_e.set_text(self._do_in_current_view('eval_js', 'document.getSelection().toString()'))
+    self.search_e.grab_focus()
+    self.search_cb(self.search_e)
 
   def search_cb(self, e, forward=True):
     txt=self.search_e.get_text()
