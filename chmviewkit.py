@@ -73,6 +73,12 @@ def sure(msg, w=None):
   dlg.destroy()
   return r==gtk.RESPONSE_YES
 
+def error(msg, w=None):
+  dlg=gtk.MessageDialog(w, gtk.DIALOG_MODAL,gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
+  dlg.connect("response", lambda *args: dlg.hide())
+  r=dlg.run()
+  dlg.destroy()
+  return r==gtk.RESPONSE_OK
 
 class WV(webkit.WebView):
   def __init__(self, key):
@@ -595,7 +601,7 @@ class MainWindow(gtk.Window):
       # FIXME: have a single method for this
       key=self.app.load_chm(chmfn)
       fn=self.app.get_toc(key)[0]['local']  # FIXME: just put cursor to first is_page
-    except IOError: return # FIXME: show a nice error to user
+    except IOError: error(_("unable to open file [%s]!") % chmfn,None); return
     except KeyError: pass
     except IndexError: pass
     self._content.new_tab(self.gen_url(key, fn), key)
@@ -771,7 +777,7 @@ def main():
   while(not server.running): time.sleep(0.25)
   gtk.gdk.threads_enter()
   w=MainWindow(app, port, server)
-  for fn in sys.argv:
+  for fn in sys.argv[1:]:
     if not os.path.exists(fn): continue
     w._do_open(fn)
   try: 
