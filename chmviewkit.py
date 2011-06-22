@@ -29,6 +29,7 @@ import webkit
 from subprocess import Popen, PIPE
 from urllib import unquote
 from urlparse import urlparse, urlsplit
+from htmlentitydefs import entitydefs
 
 from paste import httpserver
 from chm import chm, chmlib
@@ -359,6 +360,9 @@ normalize_tb={
 
 def normalize(s): return s.translate(normalize_tb)
 
+def _fix_entities(s):
+  # FIXME: case sensitivity
+  return reduce(lambda a,(b,c): a.replace("&"+b+";", c), entitydefs.items(), s)
 
 class BookSidePane(gtk.Notebook):
   def __init__(self, win, app, key):
@@ -375,7 +379,8 @@ class BookSidePane(gtk.Notebook):
     app,key=self.app,self.key
     s = gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
     self.ix=gtk.TreeView(s)
-    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), text=0, scale=4)
+    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), markup=0, scale=4)
+    col.mark_up=True
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
@@ -405,7 +410,7 @@ class BookSidePane(gtk.Notebook):
     app,key=self.app,self.key
     s = gtk.TreeStore(str, str, str, bool) # label, normalized, url, is_page
     self.tree=gtk.TreeView(s)
-    col=gtk.TreeViewColumn('Topics', gtk.CellRendererText(), text=0)
+    col=gtk.TreeViewColumn('Topics', gtk.CellRendererText(), markup=0)
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
@@ -432,6 +437,7 @@ class BookSidePane(gtk.Notebook):
     if not s: print "no res", r; return
     m.clear()
     for k in r:
+      k=_fix_entities(k)
       try: ku=k.decode('utf-8')
       except UnicodeDecodeError: ku=k.decode('windows-1256')
       m.append(((ku, normalize(ku), r[k], True, 1.0, )))
@@ -443,7 +449,7 @@ class BookSidePane(gtk.Notebook):
     hb.pack_start(e, False, False, 2)
     s = gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
     self.results=gtk.TreeView(s)
-    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), text=0, scale=4)
+    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), markup=0, scale=4)
     col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
@@ -732,6 +738,7 @@ class ChmWebApp:
     return self.chm[key]['chmf']
 
   def _parse_toc_html(self, html):
+    html=_fix_entities(html)
     li=self._li_re
     p=self._p_re
     level=0
