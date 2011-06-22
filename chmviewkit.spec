@@ -1,7 +1,7 @@
 Name: chmviewkit
 Summary: Webkit/Gtk-based CHM viewer
 URL: http://www.ojuba.org/
-Version: 0.1.1
+Version: 0.1.2
 Release: 1%{?dist}
 Source0: http://git.ojuba.org/cgit/%{name}/snapshot/%{name}-%{version}.tar.bz2
 License: Waqf
