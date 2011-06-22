@@ -590,8 +590,14 @@ class MainWindow(gtk.Window):
 
   def search_cb(self, e, forward=True):
     txt=self.search_e.get_text()
+    view=self._get_current_view()
+    if not view: return None
     # returns False if not found
-    self._do_in_current_view("search_text", txt, False, forward, True) # txt, case, forward, wrap
+    view.search_text(txt, False, forward, True) # txt, case, forward, wrap
+    view.set_highlight_text_matches(False)
+    view.unmark_text_matches()
+    view.mark_text_matches(txt, False, False) # txt, case, limit
+    view.set_highlight_text_matches(True)
     
     
   def _show_open_dlg(self, *a):
@@ -635,10 +641,15 @@ class MainWindow(gtk.Window):
     self._content.sidepane.get_nth_page(n).show_all()
     self._content.sidepane.set_current_page(n)
   
+  def _get_current_view(self):
+    n = self._content.tabs.get_current_page()
+    if n<0: return None
+    return self._content.tabs.get_nth_page(n).get_child()
+    
+  
   def _do_in_current_view (self, action, *a, **kw):
-     n = self._content.tabs.get_current_page()
-     if n<0: return None
-     view=self._content.tabs.get_nth_page(n).get_child()
+     view=self._get_current_view()
+     if not view: return None
      return getattr(view, action)(*a,**kw)
 
   def _do_in_all_views (self, action, *a, **kw):
