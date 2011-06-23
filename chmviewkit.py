@@ -360,9 +360,18 @@ normalize_tb={
 
 def normalize(s): return s.translate(normalize_tb)
 
+def _build_entiries_re():
+  p=[]
+  for k,v in entitydefs.items():
+    if v.startswith('&'): continue
+    p.append(re.escape(k))
+  return re.compile("&(%s);" % "|".join(p), re.I)
+
+_entities_re=_build_entiries_re()
+
 def _fix_entities(s):
-  # FIXME: case sensitivity
-  return reduce(lambda a,(b,c): a.replace("&"+b+";", c), entitydefs.items(), s)
+  if not s: return ""
+  return _entities_re.sub(lambda m: entitydefs.get(m.group(1), m.group(1)), s)
 
 class BookSidePane(gtk.Notebook):
   def __init__(self, win, app, key):
