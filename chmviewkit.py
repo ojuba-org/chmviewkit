@@ -442,13 +442,15 @@ class BookSidePane(gtk.Notebook):
   def _search_cb(self, e):
     m=self.results.get_model()
     txt=e.get_text().strip()
-    s,r=self.app.get_chmf(self.key).Search(txt)
+    enc=self.app.get_encoding(self.key)
+    s,r=self.app.get_chmf(self.key).Search(txt.encode(enc))
     if not s: print "no res", r; return
+    print len(s)
     m.clear()
     for k in r:
       k=_fix_entities(k)
       try: ku=k.decode('utf-8')
-      except UnicodeDecodeError: ku=k.decode('windows-1256')
+      except UnicodeDecodeError: ku=k.decode(enc)
       m.append(((ku, normalize(ku), r[k], True, 1.0, )))
 
   def build_search_pane(self):
@@ -699,6 +701,7 @@ class ChmWebApp:
   _p_re=re.compile(r'''<param([^<>]+)>''', re.I | re.S | re.M)
   _kv_re=re.compile(r'''(\S+)\s*=\s*(["'])([^'"]*)\2''', re.I | re.S | re.M)
   _href_re=re.compile(r'''(<[^<>]+(?:href|src)=(["'])/)''', re.I | re.S | re.M)
+  _chr_re=re.compile(r'''<meta[^>]*content\s*=\s*['"]?text/html;\s*charset\s*=\s*([^ '">]+)\s*['"]?[^>]*>''', re.I | re.S | re.M)
   def __init__(self):
     self.key2file={}
     self.chm={}
@@ -737,7 +740,9 @@ class ChmWebApp:
     l,data=chmf.RetrieveObject(u)
     start_response("200 OK", [('content-type', mime)])
     # to test referrer fix comment out next line
-    if ext=='htm': data=self._href_re.sub(r'\1'+key+'$/',data)
+    if ext=='htm':
+      data=self._href_re.sub(r'\1'+key+'$/',data)
+      self.get_encoding(key, data)
     return (data,)
 
   def load_chm(self, fn):
@@ -757,12 +762,29 @@ class ChmWebApp:
       self.chm[key]['chmf']=chmf
     return self.chm[key]['chmf']
 
-  def _parse_toc_html(self, html):
+  def get_encoding(self, key, html=''):
+    if self.chm[key].has_key('encoding'): return self.chm[key]['encoding']
+    f, e=self.guess_encoding(html)
+    if f and e: self.chm[key]['encoding']=e
+    else: e='windows-1256'
+    return e
+
+  def guess_encoding(self, html=''):
+    m=self._chr_re.search(html)
+    if m: return True, m.group(1).strip()
+    e='UTF-8'
+    try: t=html.decode(e)
+    except UnicodeDecodeError: return False, e
+    return False, None
+  
+  def _parse_toc_html(self, html, home=None, title=None):
     html=_fix_entities(html)
     li=self._li_re
     p=self._p_re
     level=0
     toc=[]
+    home=home.lstrip('/')
+    home_found=False
     for i in li.split(html or ""):
       e={}
       ul=i.lower()
@@ -779,7 +801,15 @@ class ChmWebApp:
           e[param['name'].lower()+'.utf8']=u
       e['level']=level
       e['is_page']=e.has_key('local')
+      if not home_found and e.has_key('local') and home and e["local"]==home: home_found=True
       if e.has_key('name'): toc.append(e)
+    if home and not home_found:
+      i=home
+      t=title or home
+      try: u=t.decode('utf-8')
+      except UnicodeDecodeError: u=t.decode('windows-1256')
+      e={'is_page': True, 'level': 1, 'name.utf8': u, 'local': i, 'name': t}
+      toc.insert(0, e)
     return toc
 
   def _enum_cb(self, f, u, d):
@@ -791,20 +821,20 @@ class ChmWebApp:
   def get_toc(self, key):
     chmf=self.get_chmf(key)
     if self.chm[key].has_key('toc'): return self.chm[key]['toc']
-    d=[]
-    chmlib.chm_enumerate_dir(chmf.file, '/', chmlib.CHM_ENUMERATE_NORMAL , self._enum_cb, d)
-    toc=self._parse_toc_html(chmf.GetTopicsTree())
-    if not toc:
-      for i in d:
-        e={'is_page': True, 'level': 1, 'name.utf8': i.decode('utf-8'), 'local': i, 'name': i}
-        toc.append(e)
+    #d=[]
+    #chmlib.chm_enumerate_dir(chmf.file, '/', chmlib.CHM_ENUMERATE_NORMAL , self._enum_cb, d)
+    html=chmf.GetTopicsTree() or ''
+    self.get_encoding(key, html)
+    toc = self._parse_toc_html(html, chmf.home, chmf.title)
     self.chm[key]['toc']=toc
     return toc
 
   def get_ix(self, key):
     chmf=self.get_chmf(key)
     if self.chm[key].has_key('ix'): return self.chm[key]['ix']
-    ix=self._parse_toc_html(chmf.GetIndex())
+    html=chmf.GetIndex() or ''
+    self.get_encoding(key, html)
+    ix = self._parse_toc_html(html, chmf.home, chmf.title)
     self.chm[key]['ix']=ix
     return ix
 
