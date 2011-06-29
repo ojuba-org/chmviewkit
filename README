@@ -8,8 +8,9 @@ it got a server and web application and a GUI
 How different from other applications ?
 ===============================================
 
-chmsee extracts CHM file into ~/.chmsee/bookshelf and view it
-while chmviewkit views it on the fly
+chmsee wast disk space by extracting CHM file content
+into ~/.chmsee/bookshelf and view it while chmviewkit
+works on the fly
 
 gnochm uses xul (from mozilla), while we use webkit, a very lightweight library
 
