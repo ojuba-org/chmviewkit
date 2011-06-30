@@ -597,19 +597,23 @@ class MainWindow(gtk.Window):
   def find_cb(self, *a):
     self.search_e.set_text(self._do_in_current_view('eval_js', 'document.getSelection().toString()'))
     self.search_e.grab_focus()
-    self.search_cb(self.search_e)
+    self.search_e.select_region(0, len(self.search_e.get_text()))
+    #self.search_cb(self.search_e)
 
   def search_cb(self, e, forward=True):
     txt=self.search_e.get_text()
     view=self._get_current_view()
     if not view: return None
     # returns False if not found
-    view.search_text(txt, False, forward, True) # txt, case, forward, wrap
+    s=view.search_text(txt, False, forward, True) # txt, case, forward, wrap
     view.set_highlight_text_matches(False)
     view.unmark_text_matches()
     view.mark_text_matches(txt, False, False) # txt, case, limit
     view.set_highlight_text_matches(True)
-    
+    if s: self.search_e.modify_base(gtk.STATE_NORMAL, None)
+    else: self.search_e.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFCCCC"))
+    self.search_e.select_region(0, len(self.search_e.get_text()))
+
     
   def _show_open_dlg(self, *a):
     if self._open_dlg:
