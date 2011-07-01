@@ -445,7 +445,7 @@ class BookSidePane(gtk.Notebook):
     enc=self.app.get_encoding(self.key)
     s,r=self.app.get_chmf(self.key).Search(txt.encode(enc))
     if not s: print "no res", r; return
-    print len(s)
+    #print len(r)
     m.clear()
     for k in r:
       k=_fix_entities(k)
