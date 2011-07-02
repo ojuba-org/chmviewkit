@@ -397,6 +397,7 @@ class BookSidePane(gtk.Notebook):
     self.ix.set_enable_search(True)
     self.ix.set_search_column(1)
     self.ix.set_headers_visible(False)
+    self.ix.set_tooltip_column(0)
     p=[None]
     l=[]
     for e in self.app.get_ix(key):
@@ -427,6 +428,7 @@ class BookSidePane(gtk.Notebook):
     self.tree.set_enable_search(True)
     self.tree.set_search_column(1)
     self.tree.set_headers_visible(False)
+    self.tree.set_tooltip_column(0)
     p=[None]
     l=[]
     for e in self.app.get_toc(key):
@@ -441,12 +443,16 @@ class BookSidePane(gtk.Notebook):
 
   def _search_cb(self, e):
     m=self.results.get_model()
+    m.clear()
+    e.modify_base(gtk.STATE_NORMAL, None)
     txt=e.get_text().strip()
     enc=self.app.get_encoding(self.key)
     s,r=self.app.get_chmf(self.key).Search(txt.encode(enc))
-    if not s: print "no res", r; return
-    #print len(r)
-    m.clear()
+    if not s:
+      print "no res", r
+      e.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFCCCC"))
+      return
+    print len(r), "Found!"
     for k in r:
       k=_fix_entities(k)
       try: ku=k.decode('utf-8')
@@ -468,6 +474,7 @@ class BookSidePane(gtk.Notebook):
     self.results.set_enable_search(True)
     self.results.set_search_column(1)
     self.results.set_headers_visible(False)
+    self.results.set_tooltip_column(0)
     self.results.connect("cursor-changed", self._toc_cb)
     e.connect('activate', self._search_cb)
 
@@ -543,7 +550,6 @@ class MainWindow(gtk.Window):
 
     tools.insert(gtk.SeparatorToolItem(), -1)
 
-    # TODO: add navigation buttons (back, forward ..etc.) and zoom buttons
     #tools.insert(gtk.SeparatorToolItem(), -1)
 
     img=gtk.Image()
@@ -585,7 +591,6 @@ class MainWindow(gtk.Window):
     tools.insert(b, -1)
 
     # Add CTRL+F accelerator for focusing search entry
-    # TODO: Add function to get selected text then focus
     self.axl.connect_group(gtk.keysyms.F, gtk.gdk.CONTROL_MASK, gtk.ACCEL_VISIBLE, self.find_cb)
     # Add CTRL+SHIFT+G accelerator for backward search
     self.axl.connect_group(gtk.keysyms.g, gtk.gdk.CONTROL_MASK|gtk.gdk.SHIFT_MASK, gtk.ACCEL_VISIBLE, lambda *a: self.search_cb(None, False))
@@ -595,7 +600,8 @@ class MainWindow(gtk.Window):
     self.show_all()
 
   def find_cb(self, *a):
-    self.search_e.set_text(self._do_in_current_view('eval_js', 'document.getSelection().toString()'))
+    if not self.search_e.is_focus():
+        self.search_e.set_text(self._do_in_current_view('eval_js', 'document.getSelection().toString()'))
     self.search_e.grab_focus()
     self.search_e.select_region(0, len(self.search_e.get_text()))
     #self.search_cb(self.search_e)
@@ -603,7 +609,7 @@ class MainWindow(gtk.Window):
   def search_cb(self, e, forward=True):
     txt=self.search_e.get_text()
     view=self._get_current_view()
-    if not view: return None
+    if not view or not txt: return None
     # returns False if not found
     s=view.search_text(txt, False, forward, True) # txt, case, forward, wrap
     view.set_highlight_text_matches(False)
@@ -612,8 +618,6 @@ class MainWindow(gtk.Window):
     view.set_highlight_text_matches(True)
     if s: self.search_e.modify_base(gtk.STATE_NORMAL, None)
     else: self.search_e.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFCCCC"))
-    self.search_e.select_region(0, len(self.search_e.get_text()))
-
     
   def _show_open_dlg(self, *a):
     if self._open_dlg:
