@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-30 14:47+0300\n"
+"POT-Creation-Date: 2011-07-02 13:57+0300\n"
 "PO-Revision-Date: 2011-06-14 15:23+0300\n"
 "Last-Translator: Muayyad Alsadi<alsadi@ojuba.org>\n"
 "Language-Team: LANGUAGE <ar@li.org>\n"
@@ -27,7 +27,7 @@ msgstr ""
 
 #: ../chmviewkit.desktop.in.h:3
 msgid "HTML Help(CHM) viewer"
-msgstr ""
+msgstr "عارض ملفات المساعدة CHM"
 
 #: ../chmviewkit.py:100 ../chmviewkit.py:109
 #, python-format
@@ -50,60 +50,68 @@ msgstr "الفهرس"
 msgid "Search"
 msgstr "بحث"
 
-#: ../chmviewkit.py:497 ../chmviewkit.py:512
+#: ../chmviewkit.py:507
+msgid "CHM (Compiled HTML) Files Viewer"
+msgstr "عراض لملفات CHM المصنفة"
+
+#: ../chmviewkit.py:542 ../chmviewkit.py:557
 msgid "CHM View Kit"
 msgstr ""
 
-#: ../chmviewkit.py:518
+#: ../chmviewkit.py:563
 msgid "Open a CHM file"
 msgstr "فتح ملف CHM"
 
-#: ../chmviewkit.py:524
+#: ../chmviewkit.py:569
 msgid "Print current page"
 msgstr "طباعة الصفحة الحالية"
 
-#: ../chmviewkit.py:533
+#: ../chmviewkit.py:578
 msgid "Go Back"
 msgstr "عودة"
 
-#: ../chmviewkit.py:541
+#: ../chmviewkit.py:586
 msgid "Go Forward"
 msgstr "أمام"
 
-#: ../chmviewkit.py:551
+#: ../chmviewkit.py:595
 msgid "Zoom in"
 msgstr "تصغير"
 
-#: ../chmviewkit.py:556
+#: ../chmviewkit.py:600
 msgid "Makes things appear bigger"
 msgstr "يظهر الأشياء أكبر"
 
-#: ../chmviewkit.py:562
+#: ../chmviewkit.py:606
 msgid "Zoom out"
 msgstr "تكبير"
 
-#: ../chmviewkit.py:565
+#: ../chmviewkit.py:609
 msgid "Makes things appear smaller"
 msgstr "يظهر الأشياء أصغر"
 
-#: ../chmviewkit.py:571
+#: ../chmviewkit.py:615
 msgid "1:1 Zoom"
 msgstr "تقريب 1:1"
 
-#: ../chmviewkit.py:574
+#: ../chmviewkit.py:618
 msgid "restore original zoom factor"
 msgstr "استعادة معامل التقريب"
 
-#: ../chmviewkit.py:623
+#: ../chmviewkit.py:639
+msgid "About CHM View Kit"
+msgstr ""
+
+#: ../chmviewkit.py:676
 msgid "CHM Files"
 msgstr "ملفات CHM"
 
-#: ../chmviewkit.py:627
+#: ../chmviewkit.py:680
 msgid "All files"
 msgstr "كل الملفات"
 
 #. FIXME: just put cursor to first is_page
-#: ../chmviewkit.py:649
+#: ../chmviewkit.py:702
 #, python-format
 msgid "unable to open file [%s]!"
 msgstr "غير قادر على فتح الملف [%s]!"

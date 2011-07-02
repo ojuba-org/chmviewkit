@@ -1,7 +1,7 @@
 Name: chmviewkit
 Summary: Webkit/Gtk-based CHM viewer
 URL: http://www.ojuba.org/
-Version: 0.1.4
+Version: 0.2.0
 Release: 1%{?dist}
 Source0: http://git.ojuba.org/cgit/%{name}/snapshot/%{name}-%{version}.tar.bz2
 License: Waqf
@@ -43,7 +43,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc LICENSE-ar.txt LICENSE-en README TODO
+%doc LICENSE-ar.txt LICENSE-en README TODO AUTHORS
 %{_bindir}/chmviewkit
 %{python_sitelib}/chmviewkit*
 %{python_sitelib}/*.egg-info
@@ -53,6 +53,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/locale/*/*/*.mo
 
 %changelog
+* Sat Jul 2 2011  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.2.0-1
+- fully featured stable release
+
 * Sat Jun 19 2011  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.1.0-1
 - initial packing
 

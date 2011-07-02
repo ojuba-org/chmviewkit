@@ -2,7 +2,7 @@
 """
 CHM View Kit - chm viewer based on gtk webkit libraries
 
-Copyright © 2011, Muayyad Alsadi <alsadi@ojuba.org>
+Copyright © 2011, Ojuba Team <core@ojuba.org>
 
     Released under terms of Waqf Public License.
     This program is free software; you can redistribute it and/or modify
@@ -492,12 +492,50 @@ class BookSidePane(gtk.Notebook):
       url=self.win.gen_url(self.key, s.get_value(i, 2))
       self.win._content.load(url)
 
+class About(gtk.AboutDialog):
+  def __init__(self):
+    gtk.AboutDialog.__init__(self)
+    self.set_default_response(gtk.RESPONSE_CLOSE)
+    self.connect('delete-event', lambda w, *a: w.hide() or True)
+    self.connect('response', lambda w, *a: w.hide() or True)
+    try: self.set_program_name("CHM View Kit")
+    except AttributeError: pass
+    self.set_logo_icon_name('chmviewkit')
+    self.set_name("CHM View Kit")
+    #self.set_version(version)
+    self.set_copyright("Copyright © 2011, Ojuba Team <core@ojuba.org>")
+    self.set_comments(_("CHM (Compiled HTML) Files Viewer"))
+    self.set_license("""
+      Released under terms of Waqf Public License.
+      This program is free software; you can redistribute it and/or modify
+      it under the terms of the latest version Waqf Public License as
+      published by Ojuba.org.
+
+      This program is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+      The Latest version of the license can be found on
+      "http://waqf.ojuba.org/license"
+
+""")
+    self.set_website("http://git.ojuba.org/")
+    self.set_website_label("http://git.ojuba.org")
+    self.set_authors(["Muayyad Saleh Alsadi <alsadi@ojuba.org>", "Ehab El-Gedawy <ehabsas@gmail.com>"])
+#  self.set_documenters(documenters)
+#  self.set_artists(artists)
+#  self.set_translator_credits(translator_credits)
+#  self.set_logo(logo)
+
+
+
 class MainWindow(gtk.Window):
   def __init__(self, app, port, server):
     self.app = app
     self.port = port
     self.server = server # we need this to quit the server when closing main window
     self._open_dlg=None
+    self._about_dlg=None
     
     gtk.window_set_default_icon_name('chmviewkit')
     gtk.Window.__init__(self)
@@ -595,6 +633,12 @@ class MainWindow(gtk.Window):
     # Add CTRL+SHIFT+G accelerator for backward search
     self.axl.connect_group(gtk.keysyms.g, gtk.gdk.CONTROL_MASK|gtk.gdk.SHIFT_MASK, gtk.ACCEL_VISIBLE, lambda *a: self.search_cb(None, False))
 
+    tools.insert(gtk.SeparatorToolItem(), -1)
+    b=gtk.ToolButton(gtk.STOCK_ABOUT)
+    b.connect('clicked', self._show_about_dlg)
+    b.set_tooltip_text(_("About CHM View Kit"))
+    tools.insert(b, -1)
+
     self.connect("delete_event", self.quit)
     
     self.show_all()
@@ -618,7 +662,12 @@ class MainWindow(gtk.Window):
     view.set_highlight_text_matches(True)
     if s: self.search_e.modify_base(gtk.STATE_NORMAL, None)
     else: self.search_e.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFCCCC"))
-    
+
+  def _show_about_dlg(self, *a):
+    if not self._about_dlg:
+      self._about_dlg=About()
+    return self._about_dlg.run()
+
   def _show_open_dlg(self, *a):
     if self._open_dlg:
       return self._open_dlg.run()
