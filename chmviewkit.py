@@ -331,6 +331,7 @@ class ContentPane (gtk.HPaned):
                tree.expand_to_path(path)
                tree.scroll_to_cell(path)
                tree.get_selection().select_iter(i)
+               return True
         pane=self.win.app.chm[key]["pane"]
         pane.working=True
         for t in (pane.tree, pane.ix, pane.results):
