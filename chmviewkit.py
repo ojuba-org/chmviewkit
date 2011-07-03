@@ -763,7 +763,7 @@ class ChmWebApp:
   }
   _li_re=re.compile(r'''(</?(?:ul|li)[^>]*>)''', re.I | re.S | re.M)
   _p_re=re.compile(r'''<param([^<>]+)>''', re.I | re.S | re.M)
-  _kv_re=re.compile(r'''(\S+)\s*=\s*(["'])([^'"]*)\2''', re.I | re.S | re.M)
+  _kv_re=re.compile(r'''(\S+)\s*=\s*("([^"]*)"|'([^']*)')''', re.I | re.S | re.M)
   _href_re=re.compile(r'''(<[^<>]+(?:href|src)=(["'])/)''', re.I | re.S | re.M)
   _chr_re=re.compile(r'''<meta[^>]*content\s*=\s*['"]?text/html;\s*charset\s*=\s*([^ '">]+)\s*['"]?[^>]*>''', re.I | re.S | re.M)
   def __init__(self):
@@ -856,7 +856,8 @@ class ChmWebApp:
       elif ul.startswith('</ul'): level-=1
       for m in p.findall(i):
         param={}
-        for k,j2,v in self._kv_re.findall(m):
+        for kvm in self._kv_re.findall(m):
+          k, v = kvm[0], kvm[1]
           param[k.lower().strip(" \t\n\r\"'")]=v.strip(" \t\n\r\"'")
         if param.has_key('name') and param.has_key('value'):
           e[param['name'].lower()]=param['value']
