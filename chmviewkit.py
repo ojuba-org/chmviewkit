@@ -316,10 +316,10 @@ class ContentPane (gtk.HPaned):
 
 
     def _view_load_committed_cb (self, view, frame):
+        self.emit("focus-view-load-committed", view, frame)
         self._update_buttons(view)
         self._update_sidepan(frame)
-        self.emit("focus-view-load-committed", view, frame)
-
+        
     def _update_sidepan(self, frame):
         l=frame.get_uri().split('/', 3)
         if len(l)!=4: return
@@ -345,6 +345,7 @@ class ContentPane (gtk.HPaned):
         if not title:
            title = frame.get_uri()
         label.set_label_text(title)
+        self.win._do_highlight(self.win.search_e.get_text())
 
     def _new_web_view_request_cb (self, web_view, web_frame):
         view=self.new_tab(key=web_view.key)
@@ -446,6 +447,7 @@ class BookSidePane(gtk.Notebook):
     m.clear()
     e.modify_base(gtk.STATE_NORMAL, None)
     txt=e.get_text().strip()
+    self.win.search_e.set_text(txt)
     enc=self.app.get_encoding(self.key)
     s,r=self.app.get_chmf(self.key).Search(txt.encode(enc))
     if not s:
@@ -491,7 +493,7 @@ class BookSidePane(gtk.Notebook):
     if is_page:
       url=self.win.gen_url(self.key, s.get_value(i, 2))
       self.win._content.load(url)
-
+    
 class About(gtk.AboutDialog):
   def __init__(self):
     gtk.AboutDialog.__init__(self)
@@ -648,20 +650,24 @@ class MainWindow(gtk.Window):
         self.search_e.set_text(self._do_in_current_view('eval_js', 'document.getSelection().toString()'))
     self.search_e.grab_focus()
     self.search_e.select_region(0, len(self.search_e.get_text()))
-    #self.search_cb(self.search_e)
+    self.search_cb(self.search_e)
 
+  def _do_highlight(self, txt):
+    view=self._get_current_view()
+    view.set_highlight_text_matches(False)
+    view.unmark_text_matches()
+    view.mark_text_matches(txt, False, False)
+    view.set_highlight_text_matches(True)
+    
   def search_cb(self, e, forward=True):
     txt=self.search_e.get_text()
     view=self._get_current_view()
+    self.search_e.modify_base(gtk.STATE_NORMAL, None)
     if not view or not txt: return None
     # returns False if not found
     s=view.search_text(txt, False, forward, True) # txt, case, forward, wrap
-    view.set_highlight_text_matches(False)
-    view.unmark_text_matches()
-    view.mark_text_matches(txt, False, False) # txt, case, limit
-    view.set_highlight_text_matches(True)
-    if s: self.search_e.modify_base(gtk.STATE_NORMAL, None)
-    else: self.search_e.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFCCCC"))
+    self._do_highlight(txt)
+    if not s: self.search_e.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFCCCC"))
 
   def _show_about_dlg(self, *a):
     if not self._about_dlg:
