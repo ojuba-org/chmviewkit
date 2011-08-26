@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-02 13:57+0300\n"
+"POT-Creation-Date: 2011-08-26 17:38+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,80 +38,80 @@ msgstr ""
 msgid "Open Link in New Tab"
 msgstr ""
 
-#: ../chmviewkit.py:383
+#: ../chmviewkit.py:385
 msgid "Topics Tree"
 msgstr ""
 
-#: ../chmviewkit.py:384
+#: ../chmviewkit.py:386
 msgid "Index"
 msgstr ""
 
-#: ../chmviewkit.py:385
+#: ../chmviewkit.py:387
 msgid "Search"
 msgstr ""
 
-#: ../chmviewkit.py:507
+#: ../chmviewkit.py:510
 msgid "CHM (Compiled HTML) Files Viewer"
 msgstr ""
 
-#: ../chmviewkit.py:542 ../chmviewkit.py:557
+#: ../chmviewkit.py:545 ../chmviewkit.py:560
 msgid "CHM View Kit"
 msgstr ""
 
-#: ../chmviewkit.py:563
+#: ../chmviewkit.py:566
 msgid "Open a CHM file"
 msgstr ""
 
-#: ../chmviewkit.py:569
+#: ../chmviewkit.py:572
 msgid "Print current page"
 msgstr ""
 
-#: ../chmviewkit.py:578
+#: ../chmviewkit.py:581
 msgid "Go Back"
 msgstr ""
 
-#: ../chmviewkit.py:586
+#: ../chmviewkit.py:589
 msgid "Go Forward"
 msgstr ""
 
-#: ../chmviewkit.py:595
+#: ../chmviewkit.py:598
 msgid "Zoom in"
 msgstr ""
 
-#: ../chmviewkit.py:600
+#: ../chmviewkit.py:603
 msgid "Makes things appear bigger"
 msgstr ""
 
-#: ../chmviewkit.py:606
+#: ../chmviewkit.py:609
 msgid "Zoom out"
 msgstr ""
 
-#: ../chmviewkit.py:609
+#: ../chmviewkit.py:612
 msgid "Makes things appear smaller"
 msgstr ""
 
-#: ../chmviewkit.py:615
+#: ../chmviewkit.py:618
 msgid "1:1 Zoom"
 msgstr ""
 
-#: ../chmviewkit.py:618
+#: ../chmviewkit.py:621
 msgid "restore original zoom factor"
 msgstr ""
 
-#: ../chmviewkit.py:639
+#: ../chmviewkit.py:642
 msgid "About CHM View Kit"
 msgstr ""
 
-#: ../chmviewkit.py:676
+#: ../chmviewkit.py:683
 msgid "CHM Files"
 msgstr ""
 
-#: ../chmviewkit.py:680
+#: ../chmviewkit.py:687
 msgid "All files"
 msgstr ""
 
 #. FIXME: just put cursor to first is_page
-#: ../chmviewkit.py:702
+#: ../chmviewkit.py:709
 #, python-format
 msgid "unable to open file [%s]!"
 msgstr ""
