@@ -698,6 +698,9 @@ class MainWindow(gtk.Window):
   def _open_cb(self, *a):
     if self._show_open_dlg()!=gtk.RESPONSE_ACCEPT: return
     chmfn=self._open_dlg.get_filename()
+    if os.path.exists(chmfn):
+      manager = gtk.recent_manager_get_default()
+      manager.add_item(chmfn)
     self._do_open(chmfn)
     
   def _do_open(self, chmfn):
