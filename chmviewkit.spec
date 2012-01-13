@@ -53,7 +53,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/locale/*/*/*.mo
 
 %changelog
-* Fri Jan 13 2011  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.2.2-1
+* Fri Jan 13 2012  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.2.2-1
 - new release with recent support
 
 * Sat Jul 2 2011  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.2.0-1
