@@ -682,6 +682,7 @@ class MainWindow(gtk.Window):
     ff=gtk.FileFilter()
     ff.set_name(_('CHM Files'))
     ff.add_mime_type('application/x-chm')
+    ff.add_mime_type('application/chm')
     self._open_dlg.add_filter(ff)
     ff=gtk.FileFilter()
     ff.set_name(_('All files'))

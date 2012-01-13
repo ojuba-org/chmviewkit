@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-26 17:38+0300\n"
+"POT-Creation-Date: 2012-01-13 21:23+0200\n"
 "PO-Revision-Date: 2011-06-14 15:23+0300\n"
 "Last-Translator: Muayyad Alsadi<alsadi@ojuba.org>\n"
 "Language-Team: LANGUAGE <ar@li.org>\n"
@@ -106,12 +106,12 @@ msgstr ""
 msgid "CHM Files"
 msgstr "ملفات CHM"
 
-#: ../chmviewkit.py:687
+#: ../chmviewkit.py:688
 msgid "All files"
 msgstr "كل الملفات"
 
 #. FIXME: just put cursor to first is_page
-#: ../chmviewkit.py:709
+#: ../chmviewkit.py:713
 #, python-format
 msgid "unable to open file [%s]!"
 msgstr "غير قادر على فتح الملف [%s]!"
