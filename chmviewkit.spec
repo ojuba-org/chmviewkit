@@ -9,7 +9,7 @@ Group: System Environment/Base
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: python, python-paste, python-chm, pygtk2, pywebkitgtk
-BuildRequires: gettext, intltool
+BuildRequires: gettext, intltool, ImageMagick
 BuildRequires: python
 
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
