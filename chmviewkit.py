@@ -22,10 +22,12 @@ import sys, os, os.path, time, re, sqlite3, hashlib
 import shutil, tempfile
 import threading, socket
 import gettext
-import gobject
-import glib, gtk, pango
-import webkit
-
+#import gobject
+from gi.repository import GObject
+#import glib, gtk, pango
+from gi.repository import Gtk, Gdk, Pango
+#import webkit
+from gi.repository import WebKit
 from subprocess import Popen, PIPE
 from urllib import unquote
 from urlparse import urlparse, urlsplit
@@ -35,11 +37,11 @@ from paste import httpserver
 from chm import chm, chmlib
 
 def async_gtk_call(f):
-    def worker((function, args, kwargs)):
-        function(*args, **kwargs)
-    def f2(*args, **kwargs):
-        gobject.idle_add(worker, (f, args, kwargs))
-    return f2
+  def worker((function, args, kwargs)):
+    function(*args, **kwargs)
+  def f2(*args, **kwargs):
+    GObject.idle_add(worker, (f, args, kwargs))
+  return f2
 
 setsid = getattr(os, 'setsid', None)
 if not setsid: setsid = getattr(os, 'setpgrp', None)
@@ -68,25 +70,26 @@ def guess_browser():
 broswer=guess_browser()
 
 def sure(msg, w=None):
-  dlg=gtk.MessageDialog(w, gtk.DIALOG_MODAL,gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
+  dlg=Gtk.MessageDialog(w, Gtk.DIALOG_MODAL,Gtk.MESSAGE_QUESTION, Gtk.BUTTONS_YES_NO, msg)
   dlg.connect("response", lambda *args: dlg.hide())
   r=dlg.run()
   dlg.destroy()
-  return r==gtk.RESPONSE_YES
+  return r==Gtk.ResponseType.YES
 
 def error(msg, w=None):
-  dlg=gtk.MessageDialog(w, gtk.DIALOG_MODAL,gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
+  dlg=Gtk.MessageDialog(w, Gtk.DIALOG_MODAL,Gtk.MESSAGE_ERROR, Gtk.BUTTONS_OK, msg)
   dlg.connect("response", lambda *args: dlg.hide())
   r=dlg.run()
   dlg.destroy()
-  return r==gtk.RESPONSE_OK
+  return r==Gtk.ResponseType.OK
 
-class WV(webkit.WebView):
+class WV(WebKit.WebView):
   def __init__(self, key):
-    webkit.WebView.__init__(self)
+    WebKit.WebView.__init__(self)
     self._lock=threading.Lock()
     self.key=key
     self.links_prompt=True
+    #self.set_view_source_mode(True)
     self.set_full_content_zoom(True)
     self.connect_after("populate-popup", self.populate_popup)
     self.connect("navigation-requested", self._navigation_requested_cb)
@@ -125,43 +128,46 @@ class WV(webkit.WebView):
 
 
   def populate_popup(self, view, menu):
-    menu.append(gtk.SeparatorMenuItem())
-    i = gtk.ImageMenuItem(gtk.STOCK_ZOOM_IN)
+    menu.append(Gtk.SeparatorMenuItem())
+    i = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_ZOOM_IN, None)
     i.connect('activate', lambda m,v,*a,**k: v.zoom_in(), view)
+    i.set_always_show_image(True)
     menu.append(i)
-    i = gtk.ImageMenuItem(gtk.STOCK_ZOOM_OUT)
+    i = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_ZOOM_OUT, None)
     i.connect('activate', lambda m,v,**k: v.zoom_out(), view)
+    i.set_always_show_image(True)
     menu.append(i)
-    i = gtk.ImageMenuItem(gtk.STOCK_ZOOM_100)
+    i = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_ZOOM_100, None)
+    i.set_always_show_image(True)
     i.connect('activate', lambda m,v,*a,**k: v.get_zoom_level() == 1.0 or v.set_zoom_level(1.0), view)
     menu.append(i)
 
     menu.show_all()
     return False
 
-class TabLabel (gtk.HBox):
+class TabLabel (Gtk.HBox):
     """A class for Tab labels"""
 
     __gsignals__ = {
-        "close": (gobject.SIGNAL_RUN_FIRST,
-                  gobject.TYPE_NONE,
-                  (gobject.TYPE_OBJECT,))
+        "close": (GObject.SIGNAL_RUN_FIRST,
+                  GObject.TYPE_NONE,
+                  (GObject.TYPE_OBJECT,))
         }
 
     def __init__ (self, title, child):
         """initialize the tab label"""
-        gtk.HBox.__init__(self, False, 4)
+        Gtk.HBox.__init__(self, False, 4)
         self.title = title
         self.child = child
-        self.label = gtk.Label(title)
+        self.label = Gtk.Label(title)
         self.label.props.max_width_chars = 30
-        self.label.set_ellipsize(pango.ELLIPSIZE_MIDDLE)
+        self.label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self.label.set_alignment(0.0, 0.5)
         # FIXME: use another icon
-        icon = gtk.image_new_from_icon_name("chmviewkit", gtk.ICON_SIZE_MENU)
-        close_image = gtk.image_new_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
-        close_button = gtk.Button()
-        close_button.set_relief(gtk.RELIEF_NONE)
+        icon = Gtk.Image.new_from_icon_name("chmviewkit", Gtk.IconSize.MENU)
+        close_image = Gtk.Image.new_from_stock(Gtk.STOCK_CLOSE, Gtk.IconSize.MENU)
+        close_button = Gtk.Button()
+        close_button.set_relief(Gtk.ReliefStyle.NONE)
         close_button.connect("clicked", self._close_tab, child)
         close_button.add(close_image)
         self.pack_start(icon, False, False, 0)
@@ -179,182 +185,210 @@ class TabLabel (gtk.HBox):
     def _close_tab (self, widget, child):
         self.emit("close", child)
 
-def tab_label_style_set_cb (tab_label, style):
+def tab_label_style_set_cb(tab_label, style):
     context = tab_label.get_pango_context()
-    metrics = context.get_metrics(tab_label.style.font_desc, context.get_language())
+    # FIXME: AttributeError: 'function' object has no attribute 'font_desc'
+    font_desc=Pango.font_description_from_string(tab_label.label.get_label())
+    metrics = context.get_metrics(font_desc, context.get_language())
     char_width = metrics.get_approximate_digit_width()
-    (width, height) = gtk.icon_size_lookup_for_settings(tab_label.get_settings(), gtk.ICON_SIZE_MENU)
-    tab_label.set_size_request(20 * pango.PIXELS(char_width) + 2 * width, -1)
+    (Bool, width, height) = Gtk.icon_size_lookup_for_settings(tab_label.get_settings(), Gtk.IconSize.MENU)
+    #tab_label.set_size_request(20 * Pango.PIXELS(char_width) + 2 * width, -1)
+    tab_label.set_size_request(20 * char_width + 2 * width, -1)
     button = tab_label.get_data("close-button")
     button.set_size_request(width + 4, height + 4)
 
-class ContentPane (gtk.HPaned):
-    __gsignals__ = {
-        "focus-view-title-changed": (gobject.SIGNAL_RUN_FIRST,
-                                     gobject.TYPE_NONE,
-                                     (gobject.TYPE_OBJECT, gobject.TYPE_STRING,)),
-        "focus-view-load-committed": (gobject.SIGNAL_RUN_FIRST,
-                                      gobject.TYPE_NONE,
-                                      (gobject.TYPE_OBJECT, gobject.TYPE_OBJECT,)),
-        "new-window-requested": (gobject.SIGNAL_RUN_FIRST,
-                                 gobject.TYPE_NONE,
-                                 (gobject.TYPE_OBJECT,))
-        }
+class ContentPane (Gtk.HPaned):
+  __gsignals__ = {
+    "focus-view-title-changed": (GObject.SIGNAL_RUN_FIRST,
+                                 GObject.TYPE_NONE,
+                                 (GObject.TYPE_OBJECT, GObject.TYPE_STRING,)),
+    "focus-view-load-committed": (GObject.SIGNAL_RUN_FIRST,
+                                  GObject.TYPE_NONE,
+                                  (GObject.TYPE_OBJECT, GObject.TYPE_OBJECT,)),
+    "new-window-requested": (GObject.SIGNAL_RUN_FIRST,
+                             GObject.TYPE_NONE,
+                             (GObject.TYPE_OBJECT,))
+    }
 
-    def __init__ (self, win, default_url=None, default_title=None, hp=gtk.POLICY_NEVER, vp=gtk.POLICY_ALWAYS):
-        """initialize the content pane"""
-        gtk.HPaned.__init__(self)
-        self.win=win
-        self.tabs=gtk.Notebook()
-        self.sidepane=gtk.Notebook()
-        self.add1(self.sidepane)
-        self.add2(self.tabs)
-        self.sidepane.set_show_tabs(False)
-        self.tabs.set_scrollable(True)
-        self.default_url=default_url
-        self.default_title=default_title
-        self.hp=hp
-        self.vp=vp
-        self.tabs.props.scrollable = True
-        self.tabs.props.homogeneous = True
-        self.tabs.connect("switch-page", self._switch_page)
+  def __init__ (self, win, 
+                default_url=None, 
+                default_title=None,
+                hp=Gtk.PolicyType.NEVER,
+                vp=Gtk.PolicyType.AUTOMATIC):
+    """initialize the content pane"""
+    Gtk.HPaned.__init__(self)
+    self.win=win
+    self.tabs=Gtk.Notebook()
+    self.sidepane=Gtk.Notebook()
+    self.add1(self.sidepane)
+    self.add2(self.tabs)
+    self.sidepane.set_show_tabs(False)
+    self.tabs.set_scrollable(True)
+    self.default_url=default_url
+    self.default_title=default_title
+    self.hp=hp
+    self.vp=vp
+    self.tabs.props.scrollable = True
+    #self.tabs.props.homogeneous = True
+    self.tabs.connect("switch-page", self._switch_page)
 
-        self.show_all()
-        self._hovered_uri = None
+    self.show_all()
+    self._hovered_uri = None
 
-    def load (self, uri):
-        """load the given uri in the current web view"""
-        child = self.tabs.get_nth_page(self.tabs.get_current_page())
-        wv = child.get_child()
-        wv.open(uri)
+  def load (self, uri):
+    """load the given uri in the current web view"""
+    child = self.tabs.get_nth_page(self.tabs.get_current_page())
+    wv = child.get_child()
+    wv.open(uri)
 
-    def new_tab_with_webview (self, webview):
-        """creates a new tab with the given webview as its child"""
-        self.tabs._construct_tab_view(webview)
+  def new_tab_with_webview (self, webview):
+    """creates a new tab with the given webview as its child"""
+    self.tabs._construct_tab_view(webview)
 
-    def new_tab (self, url=None, key=None):
-        """creates a new page in a new tab"""
-        # create the tab content
-        wv = WV(key)
-        #if url: wv.open(url)
-        self._construct_tab_view(wv, url)
-        return wv
+  def new_tab (self, url=None, key=None):
+    """creates a new page in a new tab"""
+    # create the tab content
+    wv = WV(key)
+    #if url: wv.open(url)
+    self._construct_tab_view(wv, url)
+    return wv
 
-    def _update_buttons(self, view):
-        self.win.go_back_b.set_sensitive(view.can_go_back())
-        self.win.go_forward_b.set_sensitive(view.can_go_forward())
+  def _update_buttons(self, view):
+    self.win.go_back_b.set_sensitive(view.can_go_back())
+    self.win.go_forward_b.set_sensitive(view.can_go_forward())
 
-    def _construct_tab_view (self, wv, url=None, title=None):
-        wv.connect("hovering-over-link", self._hovering_over_link_cb)
-        wv.connect("populate-popup", self._populate_page_popup_cb)
-        wv.connect("load-committed", self._view_load_committed_cb)
-        wv.connect("load-finished", self._view_load_finished_cb)
-        wv.connect("create-web-view", self._new_web_view_request_cb)
+  def _construct_tab_view (self, wv, url=None, title=None):
+    wv.connect("hovering-over-link", self._hovering_over_link_cb)
+    wv.connect("populate-popup", self._populate_page_popup_cb)
+    wv.connect("load-committed", self._view_load_committed_cb)
+    wv.connect("load-finished", self._view_load_finished_cb)
+    wv.connect("create-web-view", self._new_web_view_request_cb)
 
-        # load the content
-        self._hovered_uri = None
-        if not url: url=self.default_url
-        else: wv.open(url)
-        #elif url!=wv.get_property("uri"): wv.open(url)
+    # load the content
+    self._hovered_uri = None
+    if not url: url=self.default_url
+    else: wv.open(url)
+    #elif url!=wv.get_property("uri"): wv.open(url)
 
-        scrolled_window = gtk.ScrolledWindow()
-        scrolled_window.props.hscrollbar_policy = self.hp
-        scrolled_window.props.vscrollbar_policy = self.vp
-        scrolled_window.add(wv)
-        scrolled_window.show_all()
+    scrolled_window = Gtk.ScrolledWindow()
+    scrolled_window.props.hscrollbar_policy = self.hp
+    scrolled_window.props.vscrollbar_policy = self.vp
+    scrolled_window.add(wv)
+    scrolled_window.show_all()
 
-        # create the tab
-        if not title: title=self.default_title
-        if not title: title=url
-        label = TabLabel(title, scrolled_window)
-        label.connect("close", self._close_tab)
-        label.show_all()
+    # create the tab
+    if not title: title=self.default_title
+    if not title: title=url
+    label = TabLabel(title, scrolled_window)
+    label.connect("close", self._close_tab)
+    label.show_all()
 
-        new_tab_number = self.tabs.append_page(scrolled_window, label)
-        self.tabs.set_tab_reorderable(scrolled_window, True)
-        self.tabs.set_tab_label_packing(scrolled_window, False, False, gtk.PACK_START)
-        self.tabs.set_tab_label(scrolled_window, label)
+    new_tab_number = self.tabs.append_page(scrolled_window, label)
+    self.tabs.set_tab_reorderable(scrolled_window, True)
+    #self.tabs.set_tab_label_packing(scrolled_window, False, False, Gtk.PackType.START)
+    self.tabs.set_tab_label(scrolled_window, label)
 
-        # hide the tab if there's only one
-        self.tabs.set_show_tabs(self.tabs.get_n_pages() > 1)
+    # hide the tab if there's only one
+    self.tabs.set_show_tabs(self.tabs.get_n_pages() > 1)
 
-        self.show_all()
-        self.tabs.set_current_page(new_tab_number)
+    self.show_all()
+    self.tabs.set_current_page(new_tab_number)
 
-    def _populate_page_popup_cb(self, view, menu):
-        # misc
-        if self._hovered_uri:
-            open_in_new_tab = gtk.MenuItem(_("Open Link in New Tab"))
-            open_in_new_tab.connect("activate", self._open_in_new_tab, view)
-            menu.insert(open_in_new_tab, 0)
-            menu.show_all()
+  def _populate_page_popup_cb(self, view, menu):
+    # misc
+    if self._hovered_uri:
+      open_in_new_tab = Gtk.MenuItem(_("Open Link in New Tab"))
+      open_in_new_tab.connect("activate", self._open_in_new_tab, view)
+      menu.insert(open_in_new_tab, 0)
+      menu.show_all()
 
-    def _open_in_new_tab (self, menuitem, view):
-        self.new_tab(self._hovered_uri, key=view.key)
+  def _open_in_new_tab (self, menuitem, view):
+    self.new_tab(self._hovered_uri, key=view.key)
 
-    def _close_tab (self, label, child):
-        page_num = self.tabs.page_num(child)
-        if page_num != -1:
-            view = child.get_child()
-            view.destroy()
-            self.tabs.remove_page(page_num)
-        self.tabs.set_show_tabs(self.tabs.get_n_pages() > 1)
+  def _close_tab (self, label, child):
+    page_num = self.tabs.page_num(child)
+    if page_num != -1:
+      view = child.get_child()
+      view.destroy()
+      self.tabs.remove_page(page_num)
+    self.tabs.set_show_tabs(self.tabs.get_n_pages() > 1)
 
-    def _switch_page (self, notebook, page, page_num):
-        child = self.tabs.get_nth_page(page_num)
-        view = child.get_child()
-        frame = view.get_main_frame()
-        self.emit("focus-view-load-committed", view, frame)
-        key=view.key
-        if key and self.win.app.chm[key].has_key("pane"):
-          n=self.sidepane.page_num(self.win.app.chm[key]["pane"])
-          if n>=0: self.sidepane.set_current_page(n)
-        self._update_buttons(view)
+  def _switch_page (self, notebook, page, page_num):
+    child = self.tabs.get_nth_page(page_num)
+    view = child.get_child()
+    frame = view.get_main_frame()
+    self.emit("focus-view-load-committed", view, frame)
+    key=view.key
+    if key and self.win.app.chm[key].has_key("pane"):
+      n=self.sidepane.page_num(self.win.app.chm[key]["pane"])
+      if n>=0: self.sidepane.set_current_page(n)
+    self._update_buttons(view)
 
-    def _hovering_over_link_cb (self, view, title, uri):
-        self._hovered_uri = uri
+  def _hovering_over_link_cb (self, view, title, uri):
+    self._hovered_uri = uri
 
+  def _view_load_committed_cb (self, view, frame):
+    self.emit("focus-view-load-committed", view, frame)
+    self._update_buttons(view)
+    self._update_sidepan(frame)
+      
+  def _update_sidepan_old(self, frame):
+    # FIXME: use other method to do this 
+    ## This function not used anymore!!
+    '''Update sidpan according to frame url'''
+    l=frame.get_uri().split('/', 3)
+    if len(l)!=4: return
+    l=l[3].split('$/', 1)
+    if len(l)!=2: return
+    key,sub_uri = l
+    def checkLine(model, path, i, tree):
+      if sub_uri == store.get_value(i,2):
+        tree.expand_to_path(path)
+        tree.scroll_to_cell(path)
+        tree.get_selection().select_iter(i)
+        return True
+    pane=self.win.app.chm[key]["pane"]
+    pane.working=True
+    for t in (pane.tree, pane.ix, pane.results):
+      store = t.get_model()
+      store.foreach(checkLine, t)
+    pane.working=False
+    
+  def _update_sidepan(self, frame):
+    '''Update sidpan according to frame url'''
+    l=frame.get_uri().split('/', 3)
+    if len(l)!=4: return
+    l=l[3].split('$/', 1)
+    if len(l)!=2: return
+    key,sub_uri = l
+    pane=self.win.app.chm[key]["pane"]
+    pane.working=True
+    for t, c in ((pane.tree, pane.tree_cont), (pane.results, pane.result_cont), (pane.ix, pane.ix_cont)):
+      sel=t.get_selection()
+      sel.unselect_all()
+      if c.has_key(sub_uri):
+        p, i = c[sub_uri]
+        t.expand_to_path(p)
+        t.scroll_to_cell(p)
+        sel.select_iter(i)
+    pane.working=False
 
-    def _view_load_committed_cb (self, view, frame):
-        self.emit("focus-view-load-committed", view, frame)
-        self._update_buttons(view)
-        self._update_sidepan(frame)
-        
-    def _update_sidepan(self, frame):
-        l=frame.get_uri().split('/', 3)
-        if len(l)!=4: return
-        l=l[3].split('$/', 1)
-        if len(l)!=2: return
-        key,sub_uri = l
-        def checkLine(model, path, i, tree):
-           if sub_uri == store.get_value(i,2):
-               tree.expand_to_path(path)
-               tree.scroll_to_cell(path)
-               tree.get_selection().select_iter(i)
-               return True
-        pane=self.win.app.chm[key]["pane"]
-        pane.working=True
-        for t in (pane.tree, pane.ix, pane.results):
-          store = t.get_model()
-          store.foreach(checkLine, t)
-        pane.working=False
+  def _view_load_finished_cb(self, view, frame):
+    child = self.tabs.get_nth_page(self.tabs.get_current_page())
+    label = self.tabs.get_tab_label(child)
+    title = frame.get_title()
+    if not title:
+      title = frame.get_uri()
+    label.set_label_text(title)
+    self.win._do_highlight(self.win.search_e.get_text())
 
-    def _view_load_finished_cb(self, view, frame):
-        child = self.tabs.get_nth_page(self.tabs.get_current_page())
-        label = self.tabs.get_tab_label(child)
-        title = frame.get_title()
-        if not title:
-           title = frame.get_uri()
-        label.set_label_text(title)
-        self.win._do_highlight(self.win.search_e.get_text())
+  def _new_web_view_request_cb (self, web_view, web_frame):
+    view=self.new_tab(key=web_view.key)
+    view.connect("web-view-ready", self._new_web_view_ready_cb)
+    return view
 
-    def _new_web_view_request_cb (self, web_view, web_frame):
-        view=self.new_tab(key=web_view.key)
-        view.connect("web-view-ready", self._new_web_view_ready_cb)
-        return view
-
-    def _new_web_view_ready_cb (self, web_view):
-        self.emit("new-window-requested", web_view)
+  def _new_web_view_ready_cb (self, web_view):
+    self.emit("new-window-requested", web_view)
 
 normalize_tb={
 65: 97, 66: 98, 67: 99, 68: 100, 69: 101, 70: 102, 71: 103, 72: 104, 73: 105, 74: 106, 75: 107, 76: 108, 77: 109, 78: 110, 79: 111, 80: 112, 81: 113, 82: 114, 83: 115, 84: 116, 85: 117, 86: 118, 87: 119, 88: 120, 89: 121, 90: 122,
@@ -375,24 +409,27 @@ def _fix_entities(s):
   if not s: return ""
   return _entities_re.sub(lambda m: entitydefs.get(m.group(1), m.group(1)), s)
 
-class BookSidePane(gtk.Notebook):
+class BookSidePane(Gtk.Notebook):
   def __init__(self, win, app, key):
-    gtk.Notebook.__init__(self)
+    Gtk.Notebook.__init__(self)
     self.working=False
     self.win=win
     self.app=app
     self.key=key
-    self.append_page(self.build_toc_tree(), gtk.Label(_('Topics Tree')))
-    self.append_page(self.build_ix(), gtk.Label(_('Index')))
-    self.append_page(self.build_search_pane(), gtk.Label(_('Search')))
-
+    self.tree_cont = {}
+    self.result_cont = {}
+    self.ix_cont = {}
+    self.append_page(self.build_toc_tree(), Gtk.Label(_('Topics Tree')))
+    self.append_page(self.build_ix(), Gtk.Label(_('Index')))
+    self.append_page(self.build_search_pane(), Gtk.Label(_('Search')))
+    
   def build_ix(self):
     app,key=self.app,self.key
-    s = gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
-    self.ix=gtk.TreeView(s)
-    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), markup=0, scale=4)
+    s = Gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
+    self.ix=Gtk.TreeView(s)
+    col=Gtk.TreeViewColumn('Index', Gtk.CellRendererText(), markup=0, scale=4)
     col.mark_up=True
-    col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+    col.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
     self.ix.insert_column(col, -1)
@@ -404,26 +441,27 @@ class BookSidePane(gtk.Notebook):
     l=[]
     for e in self.app.get_ix(key):
       while(l and l[-1]>=e['level']): p.pop(); l.pop()
-      p.append(s.append((
-        (" "*len(l))+e['name.utf8'],
-        normalize(e['name.utf8'].lower()),
-        e.get('local', ''),
-        e['is_page'],
-        max(0.5, 1.0-0.0625*len(l)), )))
+      it=s.append((
+          (" "*len(l))+e['name.utf8'],
+          normalize(e['name.utf8'].lower()),
+          e.get('local', ''),
+          e['is_page'],
+          max(0.5, 1.0-0.0625*len(l)), ))
+      p.append(it)
       l.append(e['level'])
-
-    scroll=gtk.ScrolledWindow()
-    scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+      self.ix_cont[e['local']] = [s.get_path(it), it]
+    scroll=Gtk.ScrolledWindow()
+    scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
     scroll.add(self.ix)
     self.ix.connect("cursor-changed", self._toc_cb)
     return scroll
   
   def build_toc_tree(self):
     app,key=self.app,self.key
-    s = gtk.TreeStore(str, str, str, bool) # label, normalized, url, is_page
-    self.tree=gtk.TreeView(s)
-    col=gtk.TreeViewColumn('Topics', gtk.CellRendererText(), markup=0)
-    col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+    s = Gtk.TreeStore(str, str, str, bool) # label, normalized, url, is_page
+    self.tree=Gtk.TreeView(s)
+    col=Gtk.TreeViewColumn('Topics', Gtk.CellRendererText(), markup=0)
+    col.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
     self.tree.insert_column(col, -1)
@@ -436,9 +474,12 @@ class BookSidePane(gtk.Notebook):
     for e in self.app.get_toc(key):
       while(l and l[-1]>=e['level']): p.pop(); l.pop()
       l.append(e['level'])
-      p.append(s.append(p[-1],(e['name.utf8'], normalize(e['name.utf8'].lower()), e.get('local', ''), e['is_page'])))
-    scroll=gtk.ScrolledWindow()
-    scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+      it=s.append(p[-1],(e['name.utf8'], normalize(e['name.utf8'].lower()), e.get('local', ''), e['is_page']))
+      p.append(it)
+      self.tree_cont[e['local']] = [s.get_path(it), it]
+    #print self.tree_cont
+    scroll=Gtk.ScrolledWindow()
+    scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
     scroll.add(self.tree)
     self.tree.connect("cursor-changed", self._toc_cb)
     return scroll
@@ -446,31 +487,35 @@ class BookSidePane(gtk.Notebook):
   def _search_cb(self, e):
     m=self.results.get_model()
     m.clear()
-    e.modify_base(gtk.STATE_NORMAL, None)
+    self.result_cont= {}
+    e.modify_fg(Gtk.StateType.NORMAL, None)
     txt=e.get_text().strip()
     self.win.search_e.set_text(txt)
     enc=self.app.get_encoding(self.key)
-    s,r=self.app.get_chmf(self.key).Search(txt.encode(enc))
+    s,r= None,None
+    try: s,r=self.app.get_chmf(self.key).Search(txt.encode(enc))
+    except UnicodeDecodeError: pass
     if not s:
-      print "no res", r
-      e.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFCCCC"))
+      print "no res", s, r
+      e.modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse("#FF0000"))
       return
     print len(r), "Found!"
     for k in r:
       k=_fix_entities(k)
       try: ku=k.decode('utf-8')
       except UnicodeDecodeError: ku=k.decode(enc)
-      m.append(((ku, normalize(ku), r[k], True, 1.0, )))
-
+      i=m.append(((ku, normalize(ku), r[k], True, 1.0, )))
+      self.result_cont[r[k]]=[m.get_path(i),i]
+      
   def build_search_pane(self):
-    vb=gtk.VBox(False, 4)
-    hb=gtk.HBox(False, 2); vb.pack_start(hb, False, False, 2)
-    self.search_e=e=gtk.Entry()
+    vb=Gtk.VBox(False, 4)
+    hb=Gtk.HBox(False, 2); vb.pack_start(hb, False, False, 2)
+    self.search_e=e=Gtk.Entry()
     hb.pack_start(e, False, False, 2)
-    s = gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
-    self.results=gtk.TreeView(s)
-    col=gtk.TreeViewColumn('Index', gtk.CellRendererText(), markup=0, scale=4)
-    col.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+    s = Gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
+    self.results=Gtk.TreeView(s)
+    col=Gtk.TreeViewColumn('Index', Gtk.CellRendererText(), markup=0, scale=4)
+    col.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
     col.set_resizable(True)
     col.set_expand(True)
     self.results.insert_column(col, -1)
@@ -481,8 +526,8 @@ class BookSidePane(gtk.Notebook):
     self.results.connect("cursor-changed", self._toc_cb)
     e.connect('activate', self._search_cb)
 
-    scroll=gtk.ScrolledWindow()
-    scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+    scroll=Gtk.ScrolledWindow()
+    scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
     scroll.add(self.results)
     vb.pack_start(scroll, True, True, 2)
     return vb
@@ -495,10 +540,10 @@ class BookSidePane(gtk.Notebook):
       url=self.win.gen_url(self.key, s.get_value(i, 2))
       self.win._content.load(url)
     
-class About(gtk.AboutDialog):
-  def __init__(self):
-    gtk.AboutDialog.__init__(self)
-    self.set_default_response(gtk.RESPONSE_CLOSE)
+class About(Gtk.AboutDialog):
+  def __init__(self, parent):
+    Gtk.AboutDialog.__init__(self, parent=parent)
+    self.set_default_response(Gtk.ResponseType.CLOSE)
     self.connect('delete-event', lambda w, *a: w.hide() or True)
     self.connect('response', lambda w, *a: w.hide() or True)
     try: self.set_program_name("CHM View Kit")
@@ -532,7 +577,7 @@ class About(gtk.AboutDialog):
 
 
 
-class MainWindow(gtk.Window):
+class MainWindow(Gtk.Window):
   def __init__(self, app, port, server):
     self.app = app
     self.port = port
@@ -540,115 +585,121 @@ class MainWindow(gtk.Window):
     self._open_dlg=None
     self._about_dlg=None
     
-    gtk.window_set_default_icon_name('chmviewkit')
-    gtk.Window.__init__(self)
+    Gtk.Window.set_default_icon_name('chmviewkit')
+    Gtk.Window.__init__(self)
     self.set_title(_('CHM View Kit'))
     self.set_default_size(600, 480)
 
     self.maximize()
     # add drag-data-recived action
-    self.drag_dest_set(gtk.DEST_DEFAULT_ALL,gtk.target_list_add_uri_targets(),(1<<5)-1)
+    targets=Gtk.TargetList.new([])
+    targets.add_uri_targets((1<<5)-1)
+    self.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
+    self.drag_dest_set_target_list(targets)
     self.connect('drag-data-received', self.drop_data_cb)
-    self.axl = gtk.AccelGroup()
+    self.axl = Gtk.AccelGroup()
     self.add_accel_group(self.axl)
     
-    vb=gtk.VBox(False,0); self.add(vb)
+    vb=Gtk.VBox(False,0); self.add(vb)
 
-    tools=gtk.Toolbar()
+    tools=Gtk.Toolbar()
     vb.pack_start(tools, False, False, 2)
     
     self._content= ContentPane(self, None, _("CHM View Kit"))
     vb.pack_start(self._content,True, True, 2)
-
-    b=gtk.ToolButton(gtk.STOCK_OPEN)
+    
+    ACCEL_CTRL_KEY, ACCEL_CTRL_MOD = Gtk.accelerator_parse("<Ctrl>")
+    ACCEL_SHFT_KEY, ACCEL_SHFT_MOD = Gtk.accelerator_parse("<Shift>")
+    b=Gtk.ToolButton.new_from_stock(Gtk.STOCK_OPEN)
     b.connect('clicked', self._open_cb)
-    b.add_accelerator("clicked",self.axl,ord('o'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.add_accelerator("clicked",self.axl,ord('o'), ACCEL_CTRL_MOD,Gtk.AccelFlags.VISIBLE)
     b.set_tooltip_text(u"%s\t‪%s‬" % (_("Open a CHM file"), "(Ctrl+O)" ))
     tools.insert(b, -1)
 
-    b=gtk.ToolButton(gtk.STOCK_PRINT)
+    b=Gtk.ToolButton.new_from_stock(Gtk.STOCK_PRINT)
     b.connect('clicked', lambda a: self._do_in_current_view("execute_script", 'window.print();'))
-    b.add_accelerator("clicked",self.axl,ord('p'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.add_accelerator("clicked",self.axl,ord('p'), ACCEL_CTRL_MOD,Gtk.AccelFlags.VISIBLE)
     b.set_tooltip_text(u"%s\t‪%s‬" % (_("Print current page"), "(Ctrl+P)" ))
     tools.insert(b, -1)
 
-    tools.insert(gtk.SeparatorToolItem(), -1)
+    tools.insert(Gtk.SeparatorToolItem(), -1)
 
-    self.go_back_b=b=gtk.ToolButton(gtk.STOCK_GO_BACK)
+    self.go_back_b=b=Gtk.ToolButton.new_from_stock(Gtk.STOCK_GO_BACK)
     b.set_sensitive(False)
     b.connect('clicked', lambda a: self._do_in_current_view("go_back"))
-    b.add_accelerator("clicked",self.axl, gtk.keysyms.Left, gtk.gdk.META_MASK, gtk.ACCEL_VISIBLE)
+    b.add_accelerator("clicked",self.axl, Gdk.KEY_Left, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
     b.set_tooltip_text(u"%s\t‪%s‬" % (_("Go Back"), "(Alt+Left)"))
     
     tools.insert(b, -1)
 
-    self.go_forward_b=b=gtk.ToolButton(gtk.STOCK_GO_FORWARD)
+    self.go_forward_b=b=Gtk.ToolButton.new_from_stock(Gtk.STOCK_GO_FORWARD)
     b.set_sensitive(False)
     b.connect('clicked', lambda a: self._do_in_current_view("go_forward"))
-    b.add_accelerator("clicked",self.axl, gtk.keysyms.Right, gtk.gdk.META_MASK, gtk.ACCEL_VISIBLE)
+    b.add_accelerator("clicked",self.axl, Gdk.KEY_Right, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
     b.set_tooltip_text(u"%s\t‪%s‬" % (_("Go Forward"), "(Alt+Right)"))
     tools.insert(b, -1)
 
-    tools.insert(gtk.SeparatorToolItem(), -1)
+    tools.insert(Gtk.SeparatorToolItem(), -1)
 
-    #tools.insert(gtk.SeparatorToolItem(), -1)
+    #tools.insert(Gtk.SeparatorToolItem(), -1)
 
-    img=gtk.Image()
-    img.set_from_stock(gtk.STOCK_ZOOM_IN, gtk.ICON_SIZE_BUTTON)
-    b=gtk.ToolButton(icon_widget=img, label=_("Zoom in"))
+    img=Gtk.Image()
+    img.set_from_stock(Gtk.STOCK_ZOOM_IN, Gtk.IconSize.BUTTON)
+    b=Gtk.ToolButton(icon_widget=img, label=_("Zoom in"))
     b.set_is_important(True)
-    b.add_accelerator("clicked",self.axl,gtk.keysyms.equal,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b.add_accelerator("clicked",self.axl,gtk.keysyms.plus,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b.add_accelerator("clicked",self.axl,gtk.keysyms.KP_Add,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    b.add_accelerator("clicked",self.axl,Gdk.KEY_equal, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
+    b.add_accelerator("clicked",self.axl,Gdk.KEY_plus, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
+    b.add_accelerator("clicked",self.axl,Gdk.KEY_KP_Add, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
     b.set_tooltip_text(u"%s\t‪%s‬" % (_("Makes things appear bigger"), "(Ctrl++)"))
     b.connect('clicked', lambda a: self._do_in_current_view("zoom_in"))
     tools.insert(b, -1)
 
-    img=gtk.Image()
-    img.set_from_stock(gtk.STOCK_ZOOM_OUT, gtk.ICON_SIZE_BUTTON)
-    b=gtk.ToolButton(icon_widget=img, label=_("Zoom out"))
-    b.add_accelerator("clicked",self.axl,gtk.keysyms.minus,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b.add_accelerator("clicked",self.axl,gtk.keysyms.KP_Subtract,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    img=Gtk.Image()
+    img.set_from_stock(Gtk.STOCK_ZOOM_OUT, Gtk.IconSize.BUTTON)
+    b=Gtk.ToolButton(icon_widget=img, label=_("Zoom out"))
+    b.add_accelerator("clicked",self.axl,Gdk.KEY_minus, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
+    b.add_accelerator("clicked",self.axl,Gdk.KEY_KP_Subtract, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
     b.set_tooltip_text(u"%s\t‪%s‬" % (_("Makes things appear smaller"), "(Ctrl+-)"))
     b.connect('clicked', lambda a: self._do_in_current_view("zoom_out"))
     tools.insert(b, -1)
 
-    img=gtk.Image()
-    img.set_from_stock(gtk.STOCK_ZOOM_100, gtk.ICON_SIZE_BUTTON)
-    b=gtk.ToolButton(icon_widget=img, label=_("1:1 Zoom"))
-    b.add_accelerator("clicked",self.axl,ord('0'),gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b.add_accelerator("clicked",self.axl,gtk.keysyms.KP_0,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
+    img=Gtk.Image()
+    img.set_from_stock(Gtk.STOCK_ZOOM_100, Gtk.IconSize.BUTTON)
+    b=Gtk.ToolButton(icon_widget=img, label=_("1:1 Zoom"))
+    b.add_accelerator("clicked",self.axl,ord('0'), ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
+    b.add_accelerator("clicked",self.axl,Gdk.KEY_KP_0, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
     b.set_tooltip_text(u"%s\t‪%s‬" % (_("restore original zoom factor"), "(Ctrl+0)"))
     b.connect('clicked', lambda a: self._do_in_current_view("set_zoom_level",1.0))
     tools.insert(b, -1)
 
-    tools.insert(gtk.SeparatorToolItem(), -1)
+    tools.insert(Gtk.SeparatorToolItem(), -1)
 
-    self.search_e=e=gtk.Entry()
+    self.search_e=e=Gtk.Entry()
     e.connect('activate', self.search_cb)
-    e.add_accelerator("activate",self.axl,gtk.keysyms.g,gtk.gdk.CONTROL_MASK,gtk.ACCEL_VISIBLE)
-    b=gtk.ToolItem()
+    e.add_accelerator("activate",self.axl,Gdk.KEY_g, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
+    b=Gtk.ToolItem()
     b.add(e)
     tools.insert(b, -1)
 
     # Add CTRL+F accelerator for focusing search entry
-    self.axl.connect_group(gtk.keysyms.F, gtk.gdk.CONTROL_MASK, gtk.ACCEL_VISIBLE, self.find_cb)
+    self.axl.connect(Gdk.KEY_F, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE, self.find_cb)
     # Add CTRL+SHIFT+G accelerator for backward search
-    self.axl.connect_group(gtk.keysyms.g, gtk.gdk.CONTROL_MASK|gtk.gdk.SHIFT_MASK, gtk.ACCEL_VISIBLE, lambda *a: self.search_cb(None, False))
+    self.axl.connect(Gdk.KEY_g, ACCEL_CTRL_MOD|ACCEL_SHFT_MOD, \
+                           Gtk.AccelFlags.VISIBLE, lambda *a: self.search_cb(None, False))
 
-    tools.insert(gtk.SeparatorToolItem(), -1)
-    b=gtk.ToolButton(gtk.STOCK_ABOUT)
+    tools.insert(Gtk.SeparatorToolItem(), -1)
+    b=Gtk.ToolButton.new_from_stock(Gtk.STOCK_ABOUT)
     b.connect('clicked', self._show_about_dlg)
     b.set_tooltip_text(_("About CHM View Kit"))
     tools.insert(b, -1)
 
     self.connect("delete_event", self.quit)
-    
+    self.connect("destroy", self.quit)
     self.show_all()
 
   def find_cb(self, *a):
     if not self.search_e.is_focus():
-        self.search_e.set_text(self._do_in_current_view('eval_js', 'document.getSelection().toString()'))
+      self.search_e.set_text(self._do_in_current_view('eval_js', 'document.getSelection().toString()'))
     self.search_e.grab_focus()
     self.search_e.select_region(0, len(self.search_e.get_text()))
     self.search_cb(self.search_e)
@@ -663,28 +714,33 @@ class MainWindow(gtk.Window):
   def search_cb(self, e, forward=True):
     txt=self.search_e.get_text()
     view=self._get_current_view()
-    self.search_e.modify_base(gtk.STATE_NORMAL, None)
+    self.search_e.modify_fg(Gtk.StateType.NORMAL, None)
     if not view or not txt: return None
     # returns False if not found
     s=view.search_text(txt, False, forward, True) # txt, case, forward, wrap
     self._do_highlight(txt)
-    if not s: self.search_e.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("#FFCCCC"))
+    if not s: 
+      self.search_e.modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse("#FF0000"))
 
   def _show_about_dlg(self, *a):
     if not self._about_dlg:
-      self._about_dlg=About()
+      self._about_dlg=About(self)
     return self._about_dlg.run()
 
   def _show_open_dlg(self, *a):
     if self._open_dlg:
       return self._open_dlg.run()
-    self._open_dlg=gtk.FileChooserDialog("Select files to import", buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
-    ff=gtk.FileFilter()
+    self._open_dlg=Gtk.FileChooserDialog("Select files to import",parent=self, \
+                                        buttons=(Gtk.STOCK_CANCEL, \
+                                                Gtk.ResponseType.REJECT, \
+                                                Gtk.STOCK_OK, \
+                                                Gtk.ResponseType.ACCEPT))
+    ff=Gtk.FileFilter()
     ff.set_name(_('CHM Files'))
     ff.add_mime_type('application/x-chm')
     ff.add_mime_type('application/chm')
     self._open_dlg.add_filter(ff)
-    ff=gtk.FileFilter()
+    ff=Gtk.FileFilter()
     ff.set_name(_('All files'))
     ff.add_pattern('*')
     self._open_dlg.add_filter(ff)
@@ -697,10 +753,10 @@ class MainWindow(gtk.Window):
     return "http://127.0.0.1:%d/%s$/%s" % (self.port, key, fn)
 
   def _open_cb(self, *a):
-    if self._show_open_dlg()!=gtk.RESPONSE_ACCEPT: return
+    if self._show_open_dlg()!=Gtk.ResponseType.ACCEPT: return
     chmfn=self._open_dlg.get_filename()
     if os.path.exists(chmfn):
-      manager = gtk.recent_manager_get_default()
+      manager = Gtk.RecentManager.get_default()
       manager.add_item(chmfn)
     self._do_open(chmfn)
     
@@ -716,7 +772,8 @@ class MainWindow(gtk.Window):
     self._content.new_tab(self.gen_url(key, fn), key)
     pane=BookSidePane(self, self.app, key)
     self.app.chm[key]["pane"]=pane
-    n=self._content.sidepane.append_page(pane)
+    l=Gtk.Label('sss')
+    n=self._content.sidepane.append_page(pane, l)
     self._content.sidepane.get_nth_page(n).show_all()
     self._content.sidepane.set_current_page(n)
   
@@ -740,11 +797,11 @@ class MainWindow(gtk.Window):
     for chmfn in selection_data.get_uris():
       if chmfn.startswith('file://'): f=unquote(chmfn[7:]); self._do_open(f)
       else: print "Protocol not supported in [%s]" % chmfn
-    dc.drop_finish (True, t);
+    #dc.drop_finish (True, t);
 
   def quit(self,*args):
     self.server.running=False
-    gtk.main_quit()
+    Gtk.main_quit()
     return False
 
 CHM_HIGH_PORT=18080
@@ -916,19 +973,19 @@ def main():
 
   app=ChmWebApp()
   port, server=launchServer(app)
-  gobject.threads_init()
+  GObject.threads_init()
   threading.Thread(target=server.serve_forever, args=()).start()
   while(not server.running): time.sleep(0.25)
-  gtk.gdk.threads_enter()
+  Gdk.threads_enter()
   w=MainWindow(app, port, server)
   for fn in sys.argv[1:]:
     if not os.path.exists(fn): continue
     w._do_open(fn)
   try: 
-    gtk.main()
+    Gtk.main()
   except KeyboardInterrupt: 
     server.running=False
-  gtk.gdk.threads_leave()
+  Gdk.threads_leave()
 
 if __name__ == "__main__":
   main()
