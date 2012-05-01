@@ -156,7 +156,7 @@ class TabLabel (Gtk.HBox):
 
     def __init__ (self, title, child):
         """initialize the tab label"""
-        Gtk.HBox.__init__(self, False, 4)
+        Gtk.HBox.__init__(self)
         self.title = title
         self.child = child
         self.label = Gtk.Label(title)
@@ -426,7 +426,8 @@ class BookSidePane(Gtk.Notebook):
   def build_ix(self):
     app,key=self.app,self.key
     s = Gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
-    self.ix=Gtk.TreeView(s)
+    self.ix=Gtk.TreeView()
+    self.ix.set_model(s)
     col=Gtk.TreeViewColumn('Index', Gtk.CellRendererText(), markup=0, scale=4)
     col.mark_up=True
     col.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
@@ -459,7 +460,8 @@ class BookSidePane(Gtk.Notebook):
   def build_toc_tree(self):
     app,key=self.app,self.key
     s = Gtk.TreeStore(str, str, str, bool) # label, normalized, url, is_page
-    self.tree=Gtk.TreeView(s)
+    self.tree=Gtk.TreeView()
+    self.tree.set_model(s)
     col=Gtk.TreeViewColumn('Topics', Gtk.CellRendererText(), markup=0)
     col.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
     col.set_resizable(True)
@@ -476,8 +478,7 @@ class BookSidePane(Gtk.Notebook):
       l.append(e['level'])
       it=s.append(p[-1],(e['name.utf8'], normalize(e['name.utf8'].lower()), e.get('local', ''), e['is_page']))
       p.append(it)
-      self.tree_cont[e['local']] = [s.get_path(it), it]
-    #print self.tree_cont
+      if e.has_key('local'): self.tree_cont[e['local']] = [s.get_path(it), it]
     scroll=Gtk.ScrolledWindow()
     scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
     scroll.add(self.tree)
@@ -508,12 +509,13 @@ class BookSidePane(Gtk.Notebook):
       self.result_cont[r[k]]=[m.get_path(i),i]
       
   def build_search_pane(self):
-    vb=Gtk.VBox(False, 4)
-    hb=Gtk.HBox(False, 2); vb.pack_start(hb, False, False, 2)
+    vb=Gtk.VBox()
+    hb=Gtk.HBox(); vb.pack_start(hb, False, False, 2)
     self.search_e=e=Gtk.Entry()
     hb.pack_start(e, False, False, 2)
     s = Gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
-    self.results=Gtk.TreeView(s)
+    self.results=Gtk.TreeView()
+    self.results.set_model(s)
     col=Gtk.TreeViewColumn('Index', Gtk.CellRendererText(), markup=0, scale=4)
     col.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
     col.set_resizable(True)
@@ -600,7 +602,7 @@ class MainWindow(Gtk.Window):
     self.axl = Gtk.AccelGroup()
     self.add_accel_group(self.axl)
     
-    vb=Gtk.VBox(False,0); self.add(vb)
+    vb=Gtk.VBox(); self.add(vb)
 
     tools=Gtk.Toolbar()
     vb.pack_start(tools, False, False, 2)
