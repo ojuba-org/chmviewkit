@@ -1,6 +1,5 @@
 بسم الله الرحمن الرحيم
-- speed up update side pan [DONE]
-- fix menus [DONE]
+- fix spec file
 - Fix those lines:
   162:        # FIXME: use another icon
   186:    # FIXME: AttributeError: 'function' object has no attribute 'font_desc' [DONE: Not working!]
@@ -9,4 +8,3 @@
   731:      fn=self.app.get_toc(key)[0]['local']  # FIXME: just put cursor to first is_page
 - Search in arabic
 - Search with special characters ( as spaces or ' " ( \ / ? , ...etc)
-
