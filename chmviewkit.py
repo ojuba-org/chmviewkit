@@ -73,9 +73,9 @@ broswer = guess_browser()
 
 def sure(msg, w = None):
     dlg = Gtk.MessageDialog(w,
-                            Gtk.DIALOG_MODAL,
-                            Gtk.MESSAGE_QUESTION,
-                            Gtk.BUTTONS_YES_NO, msg)
+                            Gtk.DialogFlags.MODAL,
+                            Gtk.MessageType.QUESTION,
+                            Gtk.ButtonsType.YES_NO, msg)
     dlg.connect("response", lambda *args: dlg.hide())
     r = dlg.run()
     dlg.destroy()
@@ -83,9 +83,9 @@ def sure(msg, w = None):
 
 def error(msg, w=None):
     dlg = Gtk.MessageDialog(w,
-                            Gtk.DIALOG_MODAL,
-                            Gtk.MESSAGE_ERROR,
-                            Gtk.BUTTONS_OK, msg)
+                            Gtk.DialogFlags.MODAL,
+                            Gtk.MessageType.ERROR,
+                            Gtk.ButtonsType.OK, msg)
     dlg.connect("response", lambda *args: dlg.hide())
     r = dlg.run()
     dlg.destroy()
@@ -445,7 +445,7 @@ class BookSidePane(Gtk.Notebook):
         s = Gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
         self.ix = Gtk.TreeView()
         self.ix.set_model(s)
-        col = Gtk.TreeViewColumn('Index', Gtk.CellRendererText(), markup=0, scale=4)
+        col = Gtk.TreeViewColumn('Index', Gtk.CellRendererText(), markup = 0, scale = 4)
         col.mark_up = True
         col.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
         col.set_resizable(True)
@@ -480,6 +480,7 @@ class BookSidePane(Gtk.Notebook):
         self.tree = Gtk.TreeView()
         self.tree.set_model(s)
         col = Gtk.TreeViewColumn('Topics', Gtk.CellRendererText(), markup = 0)
+        col.mark_up = True
         col.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
         col.set_resizable(True)
         col.set_expand(True)
@@ -533,7 +534,8 @@ class BookSidePane(Gtk.Notebook):
         s = Gtk.ListStore(str, str, str, bool, float) # label, normalized, url, is_page, scale
         self.results = Gtk.TreeView()
         self.results.set_model(s)
-        col = Gtk.TreeViewColumn('Index', Gtk.CellRendererText(), markup=0, scale=4)
+        col = Gtk.TreeViewColumn('Index', Gtk.CellRendererText(), markup = 0, scale = 4)
+        col.mark_up = True
         col.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
         col.set_resizable(True)
         col.set_expand(True)
@@ -553,7 +555,11 @@ class BookSidePane(Gtk.Notebook):
 
     def _toc_cb(self, tree, *a):
         if self.working: return
-        s,i = tree.get_selection().get_selected()
+        try:
+            s,i = tree.get_selection().get_selected()
+        except AttributeError, e:
+            print "Error:", e
+            return
         is_page = self.win.gen_url(self.key, s.get_value(i, 3))
         if is_page:
             url = self.win.gen_url(self.key, s.get_value(i, 2))
