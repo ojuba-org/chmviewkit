@@ -138,7 +138,7 @@ class WV(WebKit.WebView):
 
 
     def populate_popup(self, view, menu):
-        menu.append(Gtk.SeparatorMenuItem())
+        menu.append(Gtk.SeparatorMenuItem.new())
         i = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_ZOOM_IN, None)
         i.connect('activate', lambda m,v,*a,**k: v.zoom_in(), view)
         i.set_always_show_image(True)
@@ -694,7 +694,7 @@ class MainWindow(Gtk.Window):
         b = Gtk.ToolButton(icon_widget = img, label = _("1:1 Zoom"))
         b.add_accelerator("clicked",self.axl,ord('0'), ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
         b.add_accelerator("clicked",self.axl,Gdk.KEY_KP_0, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
-        b.set_tooltip_text(u"%s\t‪%s‬" % (_("restore original zoom factor"), "(Ctrl+0)"))
+        b.set_tooltip_text(u"%s\t‪%s‬" % (_("Restore original zoom factor"), "(Ctrl+0)"))
         b.connect('clicked', lambda a: self._do_in_current_view("set_zoom_level",1.0))
         tools.insert(b, -1)
 
