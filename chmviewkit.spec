@@ -1,30 +1,35 @@
-Name: chmviewkit
-Summary: Webkit/Gtk-based CHM viewer
-URL: http://www.ojuba.org/
-Version: 0.2.3
-Release: 1%{?dist}
-Source0: http://git.ojuba.org/cgit/%{name}/snapshot/%{name}-%{version}.tar.bz2
-License: Waqf
-Group: System Environment/Base
-BuildArch: noarch
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires:   python, python-paste, python-chm
-Requires:   pygobject3 >= 3.0.2
-BuildRequires: gettext, intltool, ImageMagick
-BuildRequires: python
+%global owner ojuba-org
+%global commit #Write commit number here
 
-%{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+Name:		chmviewkit
+Summary:	Webkit/Gtk-based CHM viewer
+URL:		http://ojuba.org/
+Version:	0.2.3
+Release:	2%{?dist}
+Source:		https://github.com/%{owner}/%{name}/archive/%{commit}/%{name}-%{commit}.tar.gz
+License:	WAQFv2
+Group:		System Environment/Base
+BuildArch:	noarch
+Requires:	python2
+Requires:	python-paste
+Requires:	python-chm
+Requires:	pygobject3 >= 3.0.2
+BuildRequires:	gettext
+BuildRequires:	intltool
+BuildRequires:	ImageMagick
+BuildRequires:	python2
+BuildRequires:	python2-devel
 
 %description
 chmviewkit Webkit/Gtk-based CHM viewer
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{commit}
+
 %build
 make %{?_smp_mflags}
 
 %install
-rm -rf $RPM_BUILD_ROOT
 %makeinstall DESTDIR=$RPM_BUILD_ROOT
 
 %post
@@ -39,21 +44,21 @@ if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
 %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
 fi
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
 %files
 %defattr(-,root,root,-)
-%doc LICENSE-ar.txt LICENSE-en README TODO AUTHORS
+%doc waqf2-ar.pdf README TODO AUTHORS
 %{_bindir}/chmviewkit
-%{python_sitelib}/chmviewkit*
-%{python_sitelib}/*.egg-info
+%{python2_sitelib}/chmviewkit*
+%{python2_sitelib}/*.egg-info
 %{_datadir}/icons/hicolor/*/apps/*.png
 %{_datadir}/icons/hicolor/*/apps/*.svg
 %{_datadir}/applications/*.desktop
 %{_datadir}/locale/*/*/*.mo
 
 %changelog
+* Sun Jun 2 2012 Mosaab Alzoubi <moceap@hotmail.com> - 0.2.3-2
+- General Revision.
+
 * Sun Jun 2 2012  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.2.3-1
 - port to gtk3, webkit3
 
@@ -65,4 +70,3 @@ rm -rf $RPM_BUILD_ROOT
 
 * Sat Jun 19 2011  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.1.0-1
 - initial packing
-
