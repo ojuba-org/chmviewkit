@@ -639,13 +639,13 @@ class MainWindow(Gtk.Window):
         b=Gtk.ToolButton.new_from_stock(Gtk.STOCK_OPEN)
         b.connect('clicked', self._open_cb)
         b.add_accelerator("clicked",self.axl,ord('o'), ACCEL_CTRL_MOD,Gtk.AccelFlags.VISIBLE)
-        b.set_tooltip_text(u"%s\t‪%s‬" % (_("Open a CHM file"), "(Ctrl+O)" ))
+        b.set_tooltip_text("%s\t‪%s‬" % (_("Open a CHM file"), "(Ctrl+O)" ))
         tools.insert(b, -1)
 
         b = Gtk.ToolButton.new_from_stock(Gtk.STOCK_PRINT)
         b.connect('clicked', lambda a: self._do_in_current_view("execute_script", 'window.print();'))
         b.add_accelerator("clicked",self.axl,ord('p'), ACCEL_CTRL_MOD,Gtk.AccelFlags.VISIBLE)
-        b.set_tooltip_text(u"%s\t‪%s‬" % (_("Print current page"), "(Ctrl+P)" ))
+        b.set_tooltip_text("%s\t‪%s‬" % (_("Print current page"), "(Ctrl+P)" ))
         tools.insert(b, -1)
 
         tools.insert(Gtk.SeparatorToolItem(), -1)
@@ -654,7 +654,7 @@ class MainWindow(Gtk.Window):
         b.set_sensitive(False)
         b.connect('clicked', lambda a: self._do_in_current_view("go_back"))
         b.add_accelerator("clicked",self.axl, Gdk.KEY_Left, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
-        b.set_tooltip_text(u"%s\t‪%s‬" % (_("Go Back"), "(Alt+Left)"))
+        b.set_tooltip_text("%s\t‪%s‬" % (_("Go Back"), "(Alt+Left)"))
         
         tools.insert(b, -1)
 
@@ -662,7 +662,7 @@ class MainWindow(Gtk.Window):
         b.set_sensitive(False)
         b.connect('clicked', lambda a: self._do_in_current_view("go_forward"))
         b.add_accelerator("clicked",self.axl, Gdk.KEY_Right, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
-        b.set_tooltip_text(u"%s\t‪%s‬" % (_("Go Forward"), "(Alt+Right)"))
+        b.set_tooltip_text("%s\t‪%s‬" % (_("Go Forward"), "(Alt+Right)"))
         tools.insert(b, -1)
 
         tools.insert(Gtk.SeparatorToolItem(), -1)
@@ -676,7 +676,7 @@ class MainWindow(Gtk.Window):
         b.add_accelerator("clicked",self.axl,Gdk.KEY_equal, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
         b.add_accelerator("clicked",self.axl,Gdk.KEY_plus, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
         b.add_accelerator("clicked",self.axl,Gdk.KEY_KP_Add, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
-        b.set_tooltip_text(u"%s\t‪%s‬" % (_("Makes things appear bigger"), "(Ctrl++)"))
+        b.set_tooltip_text("%s\t‪%s‬" % (_("Makes things appear bigger"), "(Ctrl++)"))
         b.connect('clicked', lambda a: self._do_in_current_view("zoom_in"))
         tools.insert(b, -1)
 
@@ -685,7 +685,7 @@ class MainWindow(Gtk.Window):
         b = Gtk.ToolButton(icon_widget=img, label=_("Zoom out"))
         b.add_accelerator("clicked",self.axl,Gdk.KEY_minus, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
         b.add_accelerator("clicked",self.axl,Gdk.KEY_KP_Subtract, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
-        b.set_tooltip_text(u"%s\t‪%s‬" % (_("Makes things appear smaller"), "(Ctrl+-)"))
+        b.set_tooltip_text("%s\t‪%s‬" % (_("Makes things appear smaller"), "(Ctrl+-)"))
         b.connect('clicked', lambda a: self._do_in_current_view("zoom_out"))
         tools.insert(b, -1)
 
@@ -694,7 +694,7 @@ class MainWindow(Gtk.Window):
         b = Gtk.ToolButton(icon_widget = img, label = _("1:1 Zoom"))
         b.add_accelerator("clicked",self.axl,ord('0'), ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
         b.add_accelerator("clicked",self.axl,Gdk.KEY_KP_0, ACCEL_CTRL_MOD, Gtk.AccelFlags.VISIBLE)
-        b.set_tooltip_text(u"%s\t‪%s‬" % (_("Restore original zoom factor"), "(Ctrl+0)"))
+        b.set_tooltip_text("%s\t‪%s‬" % (_("Restore original zoom factor"), "(Ctrl+0)"))
         b.connect('clicked', lambda a: self._do_in_current_view("set_zoom_level",1.0))
         tools.insert(b, -1)
 
@@ -1050,4 +1050,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
