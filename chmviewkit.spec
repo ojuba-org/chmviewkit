@@ -69,7 +69,7 @@ fi
 * Tue Feb 18 2014 Mosaab Alzoubi <moceap@hotmail.com> - 0.2.3-2
 - General Revision.
 
-* Sun Jun 2 2012  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.2.3-1
+* Sat Jun 2 2012  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.2.3-1
 - port to gtk3, webkit3
 
 * Fri Jan 13 2012  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.2.2-1
@@ -78,5 +78,5 @@ fi
 * Sat Jul 2 2011  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.2.0-1
 - fully featured stable release
 
-* Sat Jun 19 2011  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.1.0-1
+* Sun Jun 19 2011  Muayyad Saleh AlSadi <alsadi@ojuba.org> - 0.1.0-1
 - initial packing
